@@ -19,42 +19,61 @@ isEmpty(Piece):- Piece=empty.
 
 pvp:-
     nextPlayer(P),
+    board(_),
     retract(nextPlayer(P)),    
     display_game(_, P),
-    choosePieceToMove(InitLine, InitCol),
+    choosePieceToMove(InitLine, InitCol,P),
     getValidMoves(InitLine,InitCol,_Board, ValidMoves),
     printValidMoves(ValidMoves),
     chooseMove(Move, ValidMoves),
     writeJogada(Jogada, P),
-    ((P = 1, assert(nextPlayer(2)));
-     (P = 2, assert(nextPlayer(1)))).
+    ((P == 1, assert(nextPlayer(2)));
+     (P == 2, assert(nextPlayer(1)))).
 
 
 %pvb.
 %bvb. 
 
-choosePieceToMove(InitLine, InitCol) :-
+choosePieceToMove(InitLine, InitCol, P) :-
     write('Select piece to move.\n'),
-    write('Line ?\n'),
-    write('Column ?\n'),
-    read(InitLine),
-    read(InitColLetter),
-    translateToBoard(InitColLetter, InitCol).
+    readBoardPosition(InitLine,InitCol),
+    checkValidPiece(InitLine,InitCol, P).
+
+translateToBoard(Column, ColumnNumber):-
+    char_code(Column, ColumnNumber),
+    ColumnNumber is ColumnNumber - 64.
+
+checkValidPiece(InitLine,InitCol,P):-
+    getPeca(InitLine,InitCol,_,Peca),
+    write('Peca:'),
+    write(Peca),
+    (
+        (P == 1, Peca \== 'black') ; (P == 2, Peca \== 'white') -> 
+        (write('Please choose a valid piece!\n'),choosePieceToMove(InitLine,InitCol))
+    ).
+
+getPeca(1,1,[[Peca|Resto1]|Resto2],Peca).
+getPeca(1,N,[[_|Resto1]|Resto2],Peca):- 
+	Next is N-1,
+	getPeca(1,Next,[Resto1|Resto2],Peca).
+getPeca(N, NColuna, [_ |Resto1], Peca):- 
+	Next is N-1,
+	getPeca(Next,NColuna,Resto1,Peca).
+
 
 chooseMove(Move, ValidMoves) :-
     write('Select move '),
     read(Move),
     nth1(Move, ValidMoves, _Elem).
 
+ readBoardPosition(Line,Column):-
+    write('Line ?\n'),
+    read(Line),
+    write('Column ?\n'),
+    read(Column).
+    %translateToBoard(InitColLetter, InitCol),
 
-% readJogada(Line,Column):-
-%     read(Column),
-%     translateToBoard(Column),
-%     read(Line).
 
-translateToBoard(Column, ColumnNumber):-
-    char_code(Column, ColumnNumber),
-    ColumnNumber is ColumnNumber - 65.
 
 neutreeko:-
     printMainMenu,
