@@ -73,9 +73,17 @@ chooseMove(Move, ValidMoves) :-
     read(Column).
     %translateToBoard(InitColLetter, InitCol),
 
+% valid_moves(+Board, +Player, -ListOfMoves) ​
 
+% move(+Move, +Board, -NewBoard)
 
-neutreeko:-
+% ​game_over(+Board, -Winner)
+
+% value(+Board, +Player, -Value)
+
+% choose_move(+Board, +Level, -Move)
+
+play :-
     printMainMenu,
     write('Choose an option '),
     read(Option),
@@ -83,19 +91,19 @@ neutreeko:-
 
 chooseOption(1):-
     pvp,
-    neutreeko.
+    play.
 
 % chooseOption(2):-
 %     pvc,
-%     neutreeko.
+%     play.
 
 % chooseOption(3):-
 %     cvc,
-%     neutreeko.
+%     play.
 
 chooseOption(4):-
     printRules,
-    neutreeko.
+    play.
 
 chooseOption(0):-
     write('\nExiting game.\n').
