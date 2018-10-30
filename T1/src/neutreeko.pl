@@ -16,14 +16,13 @@ symbol(white, S):- S=' x '.
 
 isEmpty(Piece):- Piece=empty.
 
-
 pvp:-
     nextPlayer(P),
-    board(_),
+    board(Board),
     retract(nextPlayer(P)),    
-    display_game(_, P),
-    choosePieceToMove(InitLine, InitCol,P),
-    getValidMoves(InitLine,InitCol,_Board, ValidMoves),
+    display_game(Board, P),
+    choosePieceToMove(InitLine,InitCol,Board,P),
+    getValidMoves(InitLine,InitCol,Board, ValidMoves),
     printValidMoves(ValidMoves),
     chooseMove(Move, ValidMoves),
     writeJogada(Jogada, P),
@@ -34,32 +33,31 @@ pvp:-
 %pvb.
 %bvb. 
 
-choosePieceToMove(InitLine, InitCol, P) :-
-    write('Select piece to move.\n'),
-    readBoardPosition(InitLine,InitCol),
-    checkValidPiece(InitLine,InitCol, P).
-
+choosePieceToMove(InitLine, InitCol,Board, P) :-
+    write('\nSelect piece to move.\n'),
+    readBoardPosition(Line,Col),
+    ((checkValidPiece(Line,Col,Board, P),(InitLine = Line, InitCol = Col));
+    (write('\nSike! Thats the wroooong piece!'),
+    choosePieceToMove(InitLine, InitCol,Board, P))).
 translateToBoard(Column, ColumnNumber):-
     char_code(Column, ColumnNumber),
     ColumnNumber is ColumnNumber - 64.
 
-checkValidPiece(InitLine,InitCol,P):-
-    getPeca(InitLine,InitCol,_,Peca),
-    write('Peca:'),
-    write(Peca),
-    (
-        (P == 1, Peca \== 'black') ; (P == 2, Peca \== 'white') -> 
-        (write('Please choose a valid piece!\n'),choosePieceToMove(InitLine,InitCol))
-    ).
+checkValidPiece(Line,Col,Board,Player):-
+    getPiece(Line,Col,Board,Piece), 
+    (isWhite(Player, Piece); isBlack(Player, Piece)).
 
-getPeca(1,1,[[Peca|Resto1]|Resto2],Peca).
-getPeca(1,N,[[_|Resto1]|Resto2],Peca):- 
-	Next is N-1,
-	getPeca(1,Next,[Resto1|Resto2],Peca).
-getPeca(N, NColuna, [_ |Resto1], Peca):- 
-	Next is N-1,
-	getPeca(Next,NColuna,Resto1,Peca).
+isBlack(Player, Piece):-
+    Player = 1,
+    Piece = black.
 
+isWhite(Player, Piece):-
+    Player = 2,
+    Piece = white.
+
+getPiece(LineN, ColN, Board, Piece):-
+    nth1(LineN, Board, Line),
+    nth1(ColN, Line, Piece).
 
 chooseMove(Move, ValidMoves) :-
     write('Select move '),
@@ -130,10 +128,6 @@ printMainMenu:-
     write('4. Rules'), nl,
     write('0. Exit game'), nl, nl.
 
-
-
-
-
 /*
 getValidMoves(Line, Column, Board, ValidMoves):- 
     getValidMovesColumn(Line, Column,Board, ValidMoves),
@@ -142,10 +136,10 @@ getValidMoves(Line, Column, Board, ValidMoves):-
 
 getValidMovesColumn(Line, Column, Board, ValidMoves):-
     nth0(0,Board,Line0),*/
+
 display_game(Board, Player) :-
     nl,
-    board(Board),
-    show_board(Board, 5),
+    show_board(Board, 1),
     format('~n~nPlayer ~d is playing.', Player).
 
 show_board([Head | Tail], I):-
@@ -155,7 +149,7 @@ show_board([Head | Tail], I):-
     write('|'),
     display_line(Head),
     nl,
-    NI is I - 1,
+    NI is I + 1,
     show_board(Tail, NI).
 show_board([_], _I):-
     write(' +---+---+---+---+---+'),
