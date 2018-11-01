@@ -110,28 +110,81 @@ getPiece(LineN,ColN,Board,Piece):-
     nth1(LineN,Board,Line),
     nth1(ColN,Line,Piece).
 
-valid_horizontal(Board, [Line,Col], [InitLine,InitCol] , Moves , 3).
+valid_horizontal(Board, [Line,Col], [InitLine,InitCol] , Moves , 3):-write(Moves),nl.
 
 valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , Moves , Inc):- 
     NextCol is Col + Inc,
     (
-        /*if*/((NextCol = 0 ; NextCol = 6),(abs(InitCol - NextCol) >  1),
+        /*if*/((NextCol = 0 ; NextCol = 6),
                 Move = [InitLine, InitCol,Line,Col],
-                write(Move), 
                 NextInc is Inc + 2, 
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,NextCol] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
               );
     getPiece(Line,NextCol,Board,Piece),
-    /*else if*/((Piece = black ; Piece = white), (abs(InitCol - NextCol) > 1),
+    /*else if*/((Piece = black ; Piece = white), 
                 Move = [InitLine, InitCol,Line,Col], 
-                write(Move), 
-                NextInc is Inc + 2, 
+                NextInc is Inc + 2,
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,NextCol] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
                );
     /*else*/(valid_horizontal(Board, [Line,NextCol], [InitLine,InitCol] , Moves , Inc))
     ).    
+
+valid_vertical(Board, [Line,Col], [InitLine,InitCol] , Moves , 3):-write(Moves),nl.
+
+valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , Moves , Inc):- 
+    NextLine is Line + Inc,
+    (
+        /*if*/((NextLine = 0 ; NextLine = 6),
+                Move = [InitLine, InitCol,Line,Col],
+                NextInc is Inc + 2, 
+                Next_Line is InitLine,
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+              );
+    getPiece(NextLine,Col,Board,Piece),
+    /*else if*/((Piece = black ; Piece = white),
+                Move = [InitLine, InitCol,Line,Col], 
+                NextInc is Inc + 2, 
+                Next_Line is InitLine,
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+               );
+    /*else*/(valid_vertical(Board, [NextLine,Col], [InitLine,InitCol] , Moves , Inc))
+    ).
+
+valid_diagonal(Board, [Line,Col], [InitLine,InitCol] , Moves , 3,3):-write(Moves),nl.
+
+valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , Moves , LineInc,ColInc):- 
+    NextLine is Line + LineInc,
+    NextCol  is Col + ColInc,
+    (
+        /*if*/((NextLine = 0 ; NextLine = 6; NextCol = 0 ; NextCol = 6),
+                Move = [InitLine, InitCol,Line,Col],
+                (
+                 (ColInc < 0 , LineInc < 0,NextColInc is ColInc + 2, NextLineInc is LineInc);
+                 (ColInc > 0 , LineInc < 0,NextLineInc is LineInc + 2, NextColInc is ColInc - 2);
+                 (ColInc < 0 , LineInc > 0,NextColInc is ColInc + 2, NextLineInc is LineInc);
+                 (ColInc > 0 , LineInc > 0,NextLineInc is LineInc + 2, NextColInc is ColInc + 2)
+                ),
+                Next_Line is InitLine,
+                Next_Col is InitCol,
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextLineInc, NextColInc)
+              );
+    getPiece(NextLine,NextCol,Board,Piece),
+    /*else if*/((Piece = black ; Piece = white),
+                Move = [InitLine, InitCol,Line,Col], 
+                (
+                 (ColInc < 0 , LineInc < 0,NextColInc is ColInc + 2, NextLineInc is LineInc);
+                 (ColInc > 0 , LineInc < 0,NextLineInc is LineInc + 2, NextColInc is ColInc - 2);
+                 (ColInc < 0 , LineInc > 0,NextColInc is ColInc + 2, NextLineInc is LineInc);
+                 (ColInc > 0 , LineInc > 0,NextLineInc is LineInc + 2, NextColInc is ColInc + 2)
+                ),
+                Next_Line is InitLine,
+                Next_Col is InitCol,
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextLineInc, NextColInc)
+               );
+    /*else*/(valid_diagonal(Board, [NextLine,NextCol], [InitLine,InitCol] , Moves , LineInc,ColInc))
+    ).
 
 valid_moves_piece(Board,[],ListOfMoves).
 
@@ -139,10 +192,9 @@ valid_moves_piece(Board, [Head|Tail],ListOfMoves):-
     Init = Head,
     Curr = Head,
     valid_horizontal(Board, Curr, Init, Moves, -1),
-    write(Moves).
-    %valid_vertical()
-    %valid_diagonal()
-    %valid_moves_piece(Board,Tail,[Moves|ListOfMoves]).
+    valid_vertical(Board, Curr, Init, Moves, -1),
+    valid_diagonal(Board, Curr, Init, Moves, -1, -1),
+    valid_moves_piece(Board,Tail,[Moves|ListOfMoves]).
 
 valid_moves(Board, Player, ListOfMoves):-
     getPieces(Board, Player, Pieces),
