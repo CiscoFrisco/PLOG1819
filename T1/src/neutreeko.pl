@@ -38,45 +38,25 @@ pvp:-
     board(Board),
     retract(nextPlayer(P)),    
     display_game(Board, P),
-    valid_moves(Board,P,Moves),
-    readBoardPosition(InitLine,InitCol),
-    makeMove(InitLine,InitCol,Board, NewBoard,P),
+    getValidMoves(Board,P,ListOfMoves),
+    write('\nHere are the valid Moves:\n'),
+    displayValidMoves(ListOfMoves, 1),
+    chooseMove(Option, ListOfMoves, Move).
+    /*move(Move,Board, NewBoard),
     retract(board(Board)),
     assert(board(NewBoard)),
     display_game(NewBoard, P),
-    /*getValidMoves(InitLine,InitCol,Board, ValidMoves),
-    printValidMoves(ValidMoves),
-    chooseMove(Move, ValidMoves),
-    writeJogada(Jogada, P),*/
-    ((P == 1, assert(nextPlayer(2)));
-     (P == 2, assert(nextPlayer(1)))).
-
+    (
+        (P == 1, assert(nextPlayer(2)));
+        (P == 2, assert(nextPlayer(1)))
+    ).*/
 
 
 %pvb.
 %bvb. 
 
-/*choosePieceToMove(InitLine, InitCol,Board, P) :-
-    write('\nSelect piece to move.\n'),
-    readBoardPosition(Line,Col),
-    ((checkValidPiece(Line,Col,Board, P),(InitLine = Line, InitCol = Col));
-    (write('\nSike! Thats the wroooong piece!'),
-    choosePieceToMove(InitLine, InitCol,Board, P))).
-translateToBoard(Column, ColumnNumber):-
-    char_code(Column, ColumnNumber),
-    ColumnNumber is ColumnNumber - 64.
-
-checkValidPiece(Line,Col,Board,Player):-
-    getPiece(Line,Col,Board,Piece), 
-    (isWhite(Player, Piece); isBlack(Player, Piece)).*/
-
-makeMove(Line,Col,BoardIn, BoardOut, P):-
-    ((P = 1, setPiece(Line,Col,BoardIn,BoardOut,black)) ; 
-     (P = 2, setPiece(Line,Col,BoardIn,BoardOut,white))),
-     write(BoardOut).
-
-
 setPiece(1,1,[[El|Resto1]|Resto2],[[Peca|Resto1]|Resto2],Peca).
+
 setPiece(1,N,[[Elem|Resto1]|Resto2], [[Elem|Head]|Resto2],Peca):- 
 	Next is N-1,
 	setPiece(1,Next,[Resto1|Resto2],[Head|Resto2],Peca).
@@ -94,67 +74,55 @@ isWhite(Player, Piece):-
     Player = 2,
     Piece = white.
 
-chooseMove(Move, ValidMoves) :-
-    write('Select move '),
-    read(Move),
-    nth1(Move, ValidMoves, _Elem).
-
- readBoardPosition(Line,Column):-
-    write('Line ?\n'),
-    read(Line),
-    write('Column ?\n'),
-    read(Column).
-    %translateToBoard(InitColLetter, InitCol),
-
 getPiece(LineN,ColN,Board,Piece):-
     nth1(LineN,Board,Line),
     nth1(ColN,Line,Piece).
 
-valid_horizontal(Board, [Line,Col], [InitLine,InitCol] , Moves , 3):-write(Moves),nl.
+valid_horizontal(Board, [Line,Col], [InitLine,InitCol] , Moves, Moves , 3).
 
-valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , Moves , Inc):- 
+valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):- 
     NextCol is Col + Inc,
     (
         /*if*/((NextCol = 0 ; NextCol = 6),
                 Move = [InitLine, InitCol,Line,Col],
                 NextInc is Inc + 2, 
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
               );
     getPiece(Line,NextCol,Board,Piece),
     /*else if*/((Piece = black ; Piece = white), 
                 Move = [InitLine, InitCol,Line,Col], 
                 NextInc is Inc + 2,
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
                );
-    /*else*/(valid_horizontal(Board, [Line,NextCol], [InitLine,InitCol] , Moves , Inc))
+    /*else*/(valid_horizontal(Board, [Line,NextCol], [InitLine,InitCol] , List, Moves , Inc))
     ).    
 
-valid_vertical(Board, [Line,Col], [InitLine,InitCol] , Moves , 3):-write(Moves),nl.
+valid_vertical(Board, [Line,Col], [InitLine,InitCol] , Moves, Moves , 3).
 
-valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , Moves , Inc):- 
+valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):- 
     NextLine is Line + Inc,
     (
         /*if*/((NextLine = 0 ; NextLine = 6),
                 Move = [InitLine, InitCol,Line,Col],
                 NextInc is Inc + 2, 
                 Next_Line is InitLine,
-                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
               );
     getPiece(NextLine,Col,Board,Piece),
     /*else if*/((Piece = black ; Piece = white),
                 Move = [InitLine, InitCol,Line,Col], 
                 NextInc is Inc + 2, 
                 Next_Line is InitLine,
-                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | Moves] , NextInc)
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | List], Moves , NextInc)
                );
-    /*else*/(valid_vertical(Board, [NextLine,Col], [InitLine,InitCol] , Moves , Inc))
+    /*else*/(valid_vertical(Board, [NextLine,Col], [InitLine,InitCol] , List, Moves , Inc))
     ).
 
-valid_diagonal(Board, [Line,Col], [InitLine,InitCol] , Moves , 3,3):-write(Moves),nl.
+valid_diagonal(Board, [Line,Col], [InitLine,InitCol] ,Moves, Moves , 3,3).
 
-valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , Moves , LineInc,ColInc):- 
+valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,ColInc):- 
     NextLine is Line + LineInc,
     NextCol  is Col + ColInc,
     (
@@ -168,7 +136,7 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , Moves , LineInc,ColInc):
                 ),
                 Next_Line is InitLine,
                 Next_Col is InitCol,
-                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextLineInc, NextColInc)
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextLineInc, NextColInc)
               );
     getPiece(NextLine,NextCol,Board,Piece),
     /*else if*/((Piece = black ; Piece = white),
@@ -181,24 +149,82 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , Moves , LineInc,ColInc):
                 ),
                 Next_Line is InitLine,
                 Next_Col is InitCol,
-                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | Moves] , NextLineInc, NextColInc)
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | List] ,Moves, NextLineInc, NextColInc)
                );
-    /*else*/(valid_diagonal(Board, [NextLine,NextCol], [InitLine,InitCol] , Moves , LineInc,ColInc))
+    /*else*/(valid_diagonal(Board, [NextLine,NextCol], [InitLine,InitCol] , List, Moves , LineInc,ColInc))
     ).
 
-valid_moves_piece(Board,[],ListOfMoves).
+isDuplicate([InitLine,InitCol,DestLine,DestCol]):-
+    InitLine = DestLine, 
+    InitCol = DestCol.
 
-valid_moves_piece(Board, [Head|Tail],ListOfMoves):-
+discardDuplicateMoves([], NewList, NewList).
+
+discardDuplicateMoves([Head | Tail], TempList, NewList):-
+        (isDuplicate(Head),discardDuplicateMoves(Tail, TempList, NewList));
+        (discardDuplicateMoves(Tail, [Head | TempList], NewList)).
+
+valid_moves_piece(Board,[],ListOfMoves,ListOfMoves).
+
+valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
     Init = Head,
     Curr = Head,
-    valid_horizontal(Board, Curr, Init, Moves, -1),
-    valid_vertical(Board, Curr, Init, Moves, -1),
-    valid_diagonal(Board, Curr, Init, Moves, -1, -1),
-    valid_moves_piece(Board,Tail,[Moves|ListOfMoves]).
+    valid_horizontal(Board, Curr, Init, [], HorMoves, -1),
+    valid_vertical(Board, Curr, Init, HorMoves, HorVertMoves, -1),
+    valid_diagonal(Board, Curr, Init, HorVertMoves, AllMoves, -1, -1),
+    discardDuplicateMoves(AllMoves, [], NewAllMoves),
+    valid_moves_piece(Board,Tail, [NewAllMoves | List], ListOfMoves).
 
-valid_moves(Board, Player, ListOfMoves):-
+
+getValidMoves(Board, Player, ListOfMoves):-
     getPieces(Board, Player, Pieces),
-    valid_moves_piece(Board,Pieces,ListOfMoves).
+    valid_moves_piece(Board,Pieces,[], ListOfMoves).
+
+getChar(Col,Char):-
+    TempCol is Col + 64,
+    char_code(Char,TempCol).
+
+displayValidMove([InitLine,InitCol,DestLine,DestCol], Counter):-
+    write(Counter),write('. '),
+    write(InitLine), getChar(InitCol,InitChar),write(InitChar),
+    write(' -> '),
+    write(DestLine), getChar(DestCol,DestChar),write(DestChar),nl.
+
+displayValidMovesPiece([], Counter,Counter).
+
+displayValidMovesPiece([Head | Tail],Counter, FinalCounter):- 
+    displayValidMove(Head, Counter),
+    NewCounter is Counter + 1,
+    displayValidMovesPiece(Tail,NewCounter, FinalCounter).
+
+displayValidMoves([], Counter).
+
+displayValidMoves([Head | Tail],Counter):-
+    displayValidMovesPiece(Head,Counter,NextCounter),
+    displayValidMoves(Tail, NextCounter).
+
+
+getMovePiece(1, [Head | Tail], Pieces, Head).
+
+getMovePiece(Option,[],[Piece | Rest], Move):-
+    getMove(Option, Rest , Move).
+    
+getMovePiece(Option,[Head | Tail], [Piece | Rest], Move):-
+    NextOption is Option - 1,
+    getMovePiece(NextOption, Tail, [Piece | Rest] , Move).
+
+getMove(Option, [Head | Tail], Move):-
+    getMovePiece(Option, Head, [Head | Tail], Move).
+
+
+chooseMove(Option, ListOfMoves,Move):- 
+    write('\nMove?'),
+    read(Option),
+    getMove(Option,ListOfMoves, Move),
+    write(Move).
+     /*; 
+        (write('Please choose a valid option.\n'), chooseMove(NewOption,ListOfMoves,Move))
+    ).*/
 
 getPieces(Board, Player, Pieces):-
     ((Player = 1, getBlackPieces(Pieces));
@@ -218,7 +244,13 @@ getWhitePieces(Pieces):-
     Pieces = [[A,B],[C,D],[E,F]].
 
 
-% move(+Move, +Board, -NewBoard)
+/*move([InitLine,InitCol,DestLine,DestCol], Board, NewBoard):-
+    nextPlayer(Player),
+    ((Player = 1, Piece = black);(Piece = white)),
+    setPiece(InitLine,InitCol,Board,TempBoard,empty),
+    setPiece(DestLine,DestCol,TempBoard,NewBoard, Piece).*/
+
+
 
 % ​game_over(+Board, -Winner)
 
@@ -272,15 +304,6 @@ printMainMenu:-
     write('3. Computer vs Computer'), nl,
     write('4. Rules'), nl,
     write('0. Exit game'), nl, nl.
-
-/*
-getValidMoves(Line, Column, Board, ValidMoves):- 
-    getValidMovesColumn(Line, Column,Board, ValidMoves),
-    getValidMovesLine(Line, Column, Board, ValidMoves),
-    getValidMovesDiagonal(Line, Column, Board, ValidMoves).
-
-getValidMovesColumn(Line, Column, Board, ValidMoves):-
-    nth0(0,Board,Line0),*/
 
 display_game(Board, Player) :-
     nl,
