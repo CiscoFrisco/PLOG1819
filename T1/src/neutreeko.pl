@@ -248,14 +248,86 @@ getWhitePieces(Pieces):-
     setPiece(DestLine,DestCol,TempBoard,NewBoard, Piece).*/
 
 
-/*
-​game_over(Board, Winner) :- game_over_row(Board, Winner).
-​game_over(Board, Winner) :- game_over_col(Board, Winner).
-​game_over(Board, Winner) :- game_over_diag(Board, Winner).
 
-game_over_row(Board, Winner).*/
+game_over(_Board, Winner) :- game_over_row(Winner).
+game_over(_Board, Winner) :- game_over_col(Winner).
+game_over(_Board, Winner) :- game_over_diag(Winner).
 
-winner(black, Value):- Value = 10.
+
+areNumbersConsecutive(N1, N2, N3) :-
+    Min1 is min(N2, N3),
+    Min2 is min(N1, Min1),
+    Max1 is max(N2, N3),
+    Max2 is max(N1, Max1),
+    Res is Max2-Min2,
+    Res=2.
+
+areConsecutiveHor(Pieces) :-
+    nth0(0, Pieces, [F1|F2]),
+    nth0(1, Pieces, [S1|S2]),
+    nth0(2, Pieces, [T1|T2]),
+    F1=S1,
+    S1=T1,
+    areNumbersConsecutive(F2, S2, T2).
+
+areConsecutiveVer(Pieces) :-
+    nth0(0, Pieces, [F1|F2]),
+    nth0(1, Pieces, [S1|S2]),
+    nth0(2, Pieces, [T1|T2]),
+    F2=S2,
+    S2=T2,
+    areNumbersConsecutive(F1, S1, T1).
+
+areConsecutiveDiag(Pieces) :-
+    nth0(0, Pieces, [F1|F2]),
+    nth0(1, Pieces, [S1|S2]),
+    nth0(2, Pieces, [T1|T2]),
+    areNumbersConsecutive(F1,S1,T1),
+    areNumbersConsecutive(F2, S2, T2).
+
+
+game_over_row(Winner):- 
+    getPieces(black, Pieces), 
+    areConsecutiveHor(Pieces),
+    Winner = black.
+
+game_over_row(Winner) :-
+    getPieces(white, Pieces),
+    areConsecutiveHor(Pieces),
+    Winner=white.
+
+game_over_row(Winner):-
+    Winner = none.
+
+game_over_diag(Winner) :-
+    getPieces(black, Pieces),
+    areConsecutiveDiag(Pieces),
+    Winner=black.
+
+game_over_diag(Winner) :-
+    getPieces(white, Pieces),
+    areConsecutiveDiag(Pieces),
+    Winner=white.
+
+game_over_diag(Winner) :-
+    Winner=none.
+
+game_over_col(Winner) :-
+    getPieces(black, Pieces),
+    areConsecutiveVer(Pieces),
+    Winner=black.
+
+game_over_col(Winner) :-
+    getPieces(white, Pieces),
+    areConsecutiveVer(Pieces),
+    Winner=white.
+
+game_over_col(Winner) :-
+    Winner=none.
+
+
+winner(black, Value) :-
+    Value=10.
 winner(white, Value):- Value = -10.
 winner(none, Value):- Value = 0.
 
