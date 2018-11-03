@@ -254,8 +254,14 @@ getWhitePieces(Pieces):-
 
 game_over_row(Board, Winner).*/
 
+winner(black, Value):- Value = 10.
+winner(white, Value):- Value = -10.
+winner(none, Value):- Value = 0.
 
-% value(+Board, +Player, -Value)
+% https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-2-evaluation-function/
+value(Board, _Player, Value):-
+    game_over(Board, Winner),
+    winner(Winner, Value).
 
 % choose_move(+Board, +Level, -Move)
 
