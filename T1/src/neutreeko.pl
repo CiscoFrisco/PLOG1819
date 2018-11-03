@@ -1,8 +1,10 @@
 :- consult('display.pl').
+:- consult('ai.pl').
 
 :- use_module(library(lists)).
-:-dynamic board/1.
 
+
+:-dynamic board/1.
 board([[empty, white, empty, white, empty],
        [empty, empty, black, empty, empty],
        [empty, empty, empty, empty, empty],
@@ -10,7 +12,6 @@ board([[empty, white, empty, white, empty],
        [empty, black, empty, black, empty]]).
 
 :-dynamic nextPlayer/1.
-
 nextPlayer(1).
 
 :- dynamic p1_1/2.
@@ -43,7 +44,7 @@ pvp:-
     board(Board),
     retract(nextPlayer(P)),    
     display_game(Board, P),
-    getValidMoves(Board,P,ListOfMoves),
+    valid_moves(Board,P,ListOfMoves),
     write('\nHere are the valid Moves:\n'),
     displayValidMoves(ListOfMoves, 1),
     chooseMove(_Option, ListOfMoves, _Move).
@@ -172,7 +173,7 @@ valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
     valid_moves_piece(Board,Tail, [NewAllMoves | List], ListOfMoves).
 
 
-getValidMoves(Board, Player, ListOfMoves):-
+valid_moves(Board, Player, ListOfMoves):-
     getPieces(Player, Pieces),
     valid_moves_piece(Board,Pieces,[], ListOfMoves).
 
@@ -258,12 +259,15 @@ winner(black, Value):- Value = 10.
 winner(white, Value):- Value = -10.
 winner(none, Value):- Value = 0.
 
+if_then_else(Condition, Action1, _Action2) :- Condition, !, Action1.  
+if_then_else(_Condition, _Action1, Action2) :- Action2.
+
 % https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-2-evaluation-function/
 value(Board, _Player, Value):-
     game_over(Board, Winner),
     winner(Winner, Value).
 
-% choose_move(+Board, +Level, -Move)
+
 
 play :-
     printMainMenu,
