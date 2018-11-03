@@ -1,5 +1,6 @@
-:- use_module(library(lists)).
+:- consult('display.pl').
 
+:- use_module(library(lists)).
 :-dynamic board/1.
 
 board([[empty, white, empty, white, empty],
@@ -11,10 +12,6 @@ board([[empty, white, empty, white, empty],
 :-dynamic nextPlayer/1.
 
 nextPlayer(1).
-
-symbol(empty, S):- S='   '.
-symbol(black, S):- S=' o '.
-symbol(white, S):- S=' x '.
 
 :- dynamic p1_1/2.
 :- dynamic p1_2/2.
@@ -33,6 +30,14 @@ p2_3(4,3).
 
 isEmpty(Piece):- Piece=empty.
 
+isBlack(Player, Piece):-
+    Player = 1,
+    Piece = black.
+
+isWhite(Player, Piece):-
+    Player = 2,
+    Piece = white.
+
 pvp:-
     nextPlayer(P),
     board(Board),
@@ -41,7 +46,7 @@ pvp:-
     getValidMoves(Board,P,ListOfMoves),
     write('\nHere are the valid Moves:\n'),
     displayValidMoves(ListOfMoves, 1),
-    chooseMove(Option, ListOfMoves, Move).
+    chooseMove(_Option, ListOfMoves, _Move).
     /*move(Move,Board, NewBoard),
     retract(board(Board)),
     assert(board(NewBoard)),
@@ -55,7 +60,7 @@ pvp:-
 %pvb.
 %bvb. 
 
-setPiece(1,1,[[El|Resto1]|Resto2],[[Peca|Resto1]|Resto2],Peca).
+setPiece(1,1,[[_El|Resto1]|Resto2],[[Peca|Resto1]|Resto2],Peca).
 
 setPiece(1,N,[[Elem|Resto1]|Resto2], [[Elem|Head]|Resto2],Peca):- 
 	Next is N-1,
@@ -65,20 +70,11 @@ setPiece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):-
 	Next is N-1,
 	setPiece(Next,NColuna,Resto1,Out,Peca).
 
-
-isBlack(Player, Piece):-
-    Player = 1,
-    Piece = black.
-
-isWhite(Player, Piece):-
-    Player = 2,
-    Piece = white.
-
 getPiece(LineN,ColN,Board,Piece):-
     nth1(LineN,Board,Line),
     nth1(ColN,Line,Piece).
 
-valid_horizontal(Board, [Line,Col], [InitLine,InitCol] , Moves, Moves , 3).
+valid_horizontal(_Board, [_Line,_Col], [_InitLine,_InitCol] , Moves, Moves , 3).
 
 valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):- 
     NextCol is Col + Inc,
@@ -99,7 +95,7 @@ valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
     /*else*/(valid_horizontal(Board, [Line,NextCol], [InitLine,InitCol] , List, Moves , Inc))
     ).    
 
-valid_vertical(Board, [Line,Col], [InitLine,InitCol] , Moves, Moves , 3).
+valid_vertical(_Board, [_Line,_Col], [_InitLine,_InitCol] , Moves, Moves , 3).
 
 valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):- 
     NextLine is Line + Inc,
@@ -120,7 +116,7 @@ valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
     /*else*/(valid_vertical(Board, [NextLine,Col], [InitLine,InitCol] , List, Moves , Inc))
     ).
 
-valid_diagonal(Board, [Line,Col], [InitLine,InitCol] ,Moves, Moves , 3,3).
+valid_diagonal(_Board, [_Line,_Col], [_InitLine,_InitCol] ,Moves, Moves , 3,3).
 
 valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,ColInc):- 
     NextLine is Line + LineInc,
@@ -164,7 +160,7 @@ discardDuplicateMoves([Head | Tail], TempList, NewList):-
         (isDuplicate(Head),discardDuplicateMoves(Tail, TempList, NewList));
         (discardDuplicateMoves(Tail, [Head | TempList], NewList)).
 
-valid_moves_piece(Board,[],ListOfMoves,ListOfMoves).
+valid_moves_piece(_Board,[],ListOfMoves,ListOfMoves).
 
 valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
     Init = Head,
@@ -177,7 +173,7 @@ valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
 
 
 getValidMoves(Board, Player, ListOfMoves):-
-    getPieces(Board, Player, Pieces),
+    getPieces(Player, Pieces),
     valid_moves_piece(Board,Pieces,[], ListOfMoves).
 
 getChar(Col,Char):-
@@ -197,19 +193,19 @@ displayValidMovesPiece([Head | Tail],Counter, FinalCounter):-
     NewCounter is Counter + 1,
     displayValidMovesPiece(Tail,NewCounter, FinalCounter).
 
-displayValidMoves([], Counter).
+displayValidMoves([], _Counter).
 
 displayValidMoves([Head | Tail],Counter):-
     displayValidMovesPiece(Head,Counter,NextCounter),
     displayValidMoves(Tail, NextCounter).
 
 
-getMovePiece(1, [Head | Tail], Pieces, Head).
+getMovePiece(1, [Head | _Tail], _Pieces, Head).
 
-getMovePiece(Option,[],[Piece | Rest], Move):-
+getMovePiece(Option,[],[_Piece | Rest], Move):-
     getMove(Option, Rest , Move).
     
-getMovePiece(Option,[Head | Tail], [Piece | Rest], Move):-
+getMovePiece(Option,[_Head | Tail], [Piece | Rest], Move):-
     NextOption is Option - 1,
     getMovePiece(NextOption, Tail, [Piece | Rest] , Move).
 
@@ -226,7 +222,7 @@ chooseMove(Option, ListOfMoves,Move):-
         (write('Please choose a valid option.\n'), chooseMove(NewOption,ListOfMoves,Move))
     ).*/
 
-getPieces(Board, Player, Pieces):-
+getPieces(Player, Pieces):-
     ((Player = 1, getBlackPieces(Pieces));
      (Player = 2, getWhitePieces(Pieces))).
 
@@ -251,8 +247,13 @@ getWhitePieces(Pieces):-
     setPiece(DestLine,DestCol,TempBoard,NewBoard, Piece).*/
 
 
+/*
+​game_over(Board, Winner) :- game_over_row(Board, Winner).
+​game_over(Board, Winner) :- game_over_col(Board, Winner).
+​game_over(Board, Winner) :- game_over_diag(Board, Winner).
 
-% ​game_over(+Board, -Winner)
+game_over_row(Board, Winner).*/
+
 
 % value(+Board, +Player, -Value)
 
@@ -283,50 +284,3 @@ chooseOption(4):-
 chooseOption(0):-
     write('\nExiting game.\n').
 
-printRules :-
-    nl,
-    write('Welcome to Neutreeko!'),
-    nl,
-    write('Each player takes turns. First one plays black. (o)'),
-    nl,
-    write('In each move, the piece can go in every direction, but it will only stop when it reaches an obstacle, or the edge of the board.'),
-    nl,
-    write('In order to win, connect your three pieces, in whichever direction.'),
-    nl,
-    write('Good luck!'),
-    nl, nl.
-
-printMainMenu:-
-    nl,
-    write('Neutreeko'), nl,
-    write('1. Player vs Player'), nl,
-    write('2. Player vs Computer'), nl,
-    write('3. Computer vs Computer'), nl,
-    write('4. Rules'), nl,
-    write('0. Exit game'), nl, nl.
-
-display_game(Board, Player) :-
-    nl,
-    show_board(Board, 1),
-    format('~n~nPlayer ~d is playing.', Player).
-
-show_board([Head | Tail], I):-
-    write(' +---+---+---+---+---+'),
-    nl,
-    write(I),
-    write('|'),
-    display_line(Head),
-    nl,
-    NI is I + 1,
-    show_board(Tail, NI).
-show_board([_], _I):-
-    write(' +---+---+---+---+---+'),
-    nl,
-    write('   A   B   C   D   E').
-
-display_line([Head | Tail]):-
-    symbol(Head, S),
-    write(S),
-    write('|'),
-    display_line(Tail).
-display_line([]).
