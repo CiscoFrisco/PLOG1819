@@ -4,41 +4,41 @@
 :- use_module(library(lists)).
 
 
-:-dynamic board/1.
-board([[empty, white, empty, white, empty],
-       [empty, empty, black, empty, empty],
-       [empty, empty, empty, empty, empty],
-       [empty, empty, white, empty, empty],
-       [empty, black, empty, black, empty]]).
+:- (dynamic board/1).
+board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]]).
 
-:-dynamic nextPlayer/1.
+:- (dynamic nextPlayer/1).
 nextPlayer(1).
 
-:- dynamic p1_1/2.
-:- dynamic p1_2/2.
-:- dynamic p1_3/2.
-:- dynamic p2_1/2.
-:- dynamic p2_2/2.
-:- dynamic p2_3/2.
+:- (dynamic p1_1/2).
+:- (dynamic p1_2/2).
+:- (dynamic p1_3/2).
+:- (dynamic p2_1/2).
+:- (dynamic p2_2/2).
+:- (dynamic p2_3/2).
 
-p1_1(5,2).
-p1_2(5,4).
-p1_3(2,3).
+p1_1(5, 2).
+p1_2(5, 4).
+p1_3(2, 3).
 
-p2_1(1,2).
-p2_2(1,4).
-p2_3(4,3).
+p2_1(1, 2).
+p2_2(1, 4).
+p2_3(4, 3).
 
-isEmpty(Piece):- Piece=empty.
+isEmpty(Piece) :-
+    Piece=empty.
 
-isBlack(Player, Piece):-
-    Player = 1,
-    Piece = black.
+isBlack(Player, Piece) :-
+    Player=1,
+    Piece=black.
 
-isWhite(Player, Piece):-
-    Player = 2,
-    Piece = white.
+isWhite(Player, Piece) :-
+    Player=2,
+    Piece=white.
 
+/**
+ * Player vs player gamemode.
+ */ 
 pvp:-
     nextPlayer(P),
     board(Board),
@@ -47,15 +47,15 @@ pvp:-
     valid_moves(Board,P,ListOfMoves),
     write('\nHere are the valid Moves:\n'),
     displayValidMoves(ListOfMoves, 1),
-    chooseMove(_Option, ListOfMoves, _Move).
-    /*move(Move,Board, NewBoard),
+    chooseMove(ListOfMoves, Move),
+    move(Move,Board, NewBoard),
     retract(board(Board)),
     assert(board(NewBoard)),
     display_game(NewBoard, P),
     (
         (P == 1, assert(nextPlayer(2)));
         (P == 2, assert(nextPlayer(1)))
-    ).*/
+    ).
 
 
 %pvb.
@@ -214,46 +214,65 @@ getMove(Option, [Head | Tail], Move):-
     getMovePiece(Option, Head, [Head | Tail], Move).
 
 
-chooseMove(Option, ListOfMoves,Move):- 
+chooseMove(ListOfMoves,Move):- 
     write('\nMove?'),
     read(Option),
-    getMove(Option,ListOfMoves, Move),
-    write(Move).
-     /*; 
-        (write('Please choose a valid option.\n'), chooseMove(NewOption,ListOfMoves,Move))
-    ).*/
+    (getMove(Option,ListOfMoves, Move) -> write(Move) ; write('Please choose a valid option.\n'), chooseMove(ListOfMoves,Move)).
 
-getPieces(Player, Pieces):-
-    ((Player = 1, getBlackPieces(Pieces));
-     (Player = 2, getWhitePieces(Pieces))).
+/**
+ * Returns the player's pieces positions on a list.
+ */
+getPieces(Player, Pieces) :-
+    (   Player=1,
+        getBlackPieces(Pieces)
+    ;   Player=2,
+        getWhitePieces(Pieces)
+    ).
 
+/**
+ * Returns the black pieces positions on a list.
+ */ 
 getBlackPieces(Pieces):-
     p1_1(A,B),
     p1_2(C,D),
     p1_3(E,F),
     Pieces = [[A,B],[C,D],[E,F]].
     
-
+/**
+ * Returns the white pieces positions on a list.
+ */ 
 getWhitePieces(Pieces):-
     p2_1(A,B),
     p2_2(C,D),
     p2_3(E,F),
     Pieces = [[A,B],[C,D],[E,F]].
 
-
-/*move([InitLine,InitCol,DestLine,DestCol], Board, NewBoard):-
+/**
+ * Performs a move, changing the given piece to a new position, and puts an empty piece on
+ * the original one.
+ */
+move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     nextPlayer(Player),
-    ((Player = 1, Piece = black);(Piece = white)),
-    setPiece(InitLine,InitCol,Board,TempBoard,empty),
-    setPiece(DestLine,DestCol,TempBoard,NewBoard, Piece).*/
+    (Player=1, Piece=black;   
+    Piece=white),
+    setPiece(InitLine, InitCol, Board, TempBoard, empty),
+    setPiece(DestLine, DestCol, TempBoard, NewBoard, Piece).
 
 
+/**
+ * Checks if there's a winner and returns it. A game is over if someone connected its
+ * three pieces horizontally, vertically or diagonally.
+ */ 
+game_over(_Board, Winner) :- 
+    game_over_row(Winner).
+game_over(_Board, Winner) :- 
+    game_over_col(Winner).
+game_over(_Board, Winner) :- 
+    game_over_diag(Winner).
 
-game_over(_Board, Winner) :- game_over_row(Winner).
-game_over(_Board, Winner) :- game_over_col(Winner).
-game_over(_Board, Winner) :- game_over_diag(Winner).
-
-
+/**
+ * Checks if three given numbers are consecutive.
+ */ 
 areNumbersConsecutive(N1, N2, N3) :-
     Min1 is min(N2, N3),
     Min2 is min(N1, Min1),
@@ -262,6 +281,9 @@ areNumbersConsecutive(N1, N2, N3) :-
     Res is Max2-Min2,
     Res=2.
 
+/**
+ * Checks if three given pieces are consecutive in a board line.
+ */ 
 areConsecutiveHor(Pieces) :-
     nth0(0, Pieces, [F1|F2]),
     nth0(1, Pieces, [S1|S2]),
@@ -270,6 +292,9 @@ areConsecutiveHor(Pieces) :-
     S1=T1,
     areNumbersConsecutive(F2, S2, T2).
 
+/**
+ * Checks if three given pieces are consecutive in a board column.
+ */
 areConsecutiveVer(Pieces) :-
     nth0(0, Pieces, [F1|F2]),
     nth0(1, Pieces, [S1|S2]),
@@ -278,91 +303,124 @@ areConsecutiveVer(Pieces) :-
     S2=T2,
     areNumbersConsecutive(F1, S1, T1).
 
+/**
+ * Checks if three given pieces are consecutive in a board diagonal.
+ */
 areConsecutiveDiag(Pieces) :-
     nth0(0, Pieces, [F1|F2]),
     nth0(1, Pieces, [S1|S2]),
     nth0(2, Pieces, [T1|T2]),
-    areNumbersConsecutive(F1,S1,T1),
+    areNumbersConsecutive(F1, S1, T1),
     areNumbersConsecutive(F2, S2, T2).
 
-
-game_over_row(Winner):- 
-    getPieces(black, Pieces), 
+/**
+ * Checks if a player has three consecutive pieces in a same row, thus winning the game.
+ */
+game_over_row(Winner) :-
+    getBlackPieces(Pieces),
     areConsecutiveHor(Pieces),
-    Winner = black.
+    Winner=black.
 
 game_over_row(Winner) :-
-    getPieces(white, Pieces),
+    getWhitePieces(Pieces),
     areConsecutiveHor(Pieces),
     Winner=white.
 
 game_over_row(Winner):-
     Winner = none.
 
+/**
+ * Checks if a player has three consecutive pieces in a same diagonal, thus winning the game.
+ */
 game_over_diag(Winner) :-
-    getPieces(black, Pieces),
+    getBlackPieces(Pieces),
     areConsecutiveDiag(Pieces),
     Winner=black.
 
 game_over_diag(Winner) :-
-    getPieces(white, Pieces),
+    getWhitePieces(Pieces),
     areConsecutiveDiag(Pieces),
     Winner=white.
 
 game_over_diag(Winner) :-
     Winner=none.
 
+/**
+ * Checks if a player has three consecutive pieces in a same column, thus winning the game.
+ */
 game_over_col(Winner) :-
-    getPieces(black, Pieces),
+    getBlackPieces(Pieces),
     areConsecutiveVer(Pieces),
     Winner=black.
 
 game_over_col(Winner) :-
-    getPieces(white, Pieces),
+    getWhitePieces(Pieces),
     areConsecutiveVer(Pieces),
     Winner=white.
 
 game_over_col(Winner) :-
     Winner=none.
 
-
+/**
+ * Return the value for the winner of the game.
+ */ 
 winner(black, Value) :-
     Value=10.
-winner(white, Value):- Value = -10.
-winner(none, Value):- Value = 0.
-
-if_then_else(Condition, Action1, _Action2) :- Condition, !, Action1.  
-if_then_else(_Condition, _Action1, Action2) :- Action2.
+winner(white, Value):- 
+    Value = -10.
+winner(none, Value):- 
+    Value = 0.
 
 % https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-2-evaluation-function/
+
+/**
+ * Return value for the current state of the game. Used by minimax.
+ */ 
 value(Board, _Player, Value):-
     game_over(Board, Winner),
     winner(Winner, Value).
 
-
-
+/**
+ * Entry point for the game. Prints the main menu, reads user's choice and redirects to
+ * the given option.
+ */  
 play :-
     printMainMenu,
     write('Choose an option '),
     read(Option),
     chooseOption(Option).
 
-chooseOption(1):-
+/**
+ * Start Player vs Player gamemode and redirect to main menu when it's over.
+ */
+chooseOption(1) :-
     pvp,
     play.
 
+/**
+ * Start Player vs Computer gamemode and redirect to main menu when it's over.
+ */
 % chooseOption(2):-
 %     pvc,
 %     play.
 
+/**
+ * Start Computer vs Computer gamemode and redirect to main menu when it's over.
+ */
 % chooseOption(3):-
 %     cvc,
 %     play.
 
-chooseOption(4):-
+/**
+ * Print rules and return to main menu.
+ */
+chooseOption(4) :-
     printRules,
     play.
 
-chooseOption(0):-
+/**
+ * Exit game.
+ */
+chooseOption(0) :-
     write('\nExiting game.\n').
 
