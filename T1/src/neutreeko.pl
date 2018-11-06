@@ -38,26 +38,35 @@ isWhite(Player, Piece) :-
 
 /**
  * Player vs player gamemode.
- */ 
-pvp:-
+ */pvp_play:-
     nextPlayer(P),
     board(Board),
-    retract(nextPlayer(P)),    
     display_game(Board, P),
-    valid_moves(Board,P,ListOfMoves),
+    valid_moves(Board, P, ListOfMoves),
     write('\nHere are the valid Moves:\n'),
     displayValidMoves(ListOfMoves, 1),
     chooseMove(ListOfMoves, Move),
-    move(Move,Board, NewBoard),
+    move(Move, Board, NewBoard),
+    retract(nextPlayer(P)),
     retract(board(Board)),
     assert(board(NewBoard)),
     display_game(NewBoard, P),
-    (
-        (P == 1, assert(nextPlayer(2)));
-        (P == 2, assert(nextPlayer(1)))
+    (   P==1,
+        assert(nextPlayer(2))
+    ;   P==2,
+        assert(nextPlayer(1))
     ).
 
-
+pvp :-
+    pvp_play,
+    board(Board),
+    game_over(Board, Winner),
+    (   Winner=black,
+        write('Player 1 won\n')
+    ;   Winner=white,
+        write('Player 2 won\n')
+    ;   pvp
+    ).
 %pvb.
 %bvb. 
 
@@ -217,7 +226,7 @@ getMove(Option, [Head | Tail], Move):-
 chooseMove(ListOfMoves,Move):- 
     write('\nMove?'),
     read(Option),
-    (getMove(Option,ListOfMoves, Move) -> write(Move) ; write('Please choose a valid option.\n'), chooseMove(ListOfMoves,Move)).
+    (getMove(Option,ListOfMoves, Move) -> true ; write('Please choose a valid option.\n'), chooseMove(ListOfMoves,Move)).
 
 /**
  * Returns the player's pieces positions on a list.
@@ -247,17 +256,40 @@ getWhitePieces(Pieces):-
     p2_3(E,F),
     Pieces = [[A,B],[C,D],[E,F]].
 
+
+set(Piece, Piece).
+
+
+updatePiece(InitLine,InitCol,DestLine,DestCol,Player):-
+    
+(Player = 1,
+    (
+        (p1_1(A,B), A= InitLine,B=InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
+        (p1_2(A,B), A= InitLine,B=InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
+        (p1_3(A,B), A= InitLine,B=InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol)))
+    )
+);
+(Player = 2,
+    (
+        (p2_1(A,B), A= InitLine,B=InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
+        (p2_2(A,B), A= InitLine,B=InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
+        (p2_3(A,B), A= InitLine,B=InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol)))
+    )
+).
+
 /**
  * Performs a move, changing the given piece to a new position, and puts an empty piece on
  * the original one.
  */
 move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     nextPlayer(Player),
-    (Player=1, Piece=black;   
-    Piece=white),
+    (   Player=1
+    ->  set(black, Piece)
+    ;   set(white, Piece)
+    ),
     setPiece(InitLine, InitCol, Board, TempBoard, empty),
-    setPiece(DestLine, DestCol, TempBoard, NewBoard, Piece).
-
+    setPiece(DestLine, DestCol, TempBoard, NewBoard, Piece),
+    updatePiece(InitLine,InitCol,DestLine,DestCol, Player).
 
 /**
  * Checks if there's a winner and returns it. A game is over if someone connected its
