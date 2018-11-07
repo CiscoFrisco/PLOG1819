@@ -25,6 +25,12 @@ p2_1(1, 2).
 p2_2(1, 4).
 p2_3(4, 3).
 
+:- (dynamic boards/1).
+:- (dynamic countOcorrences/1).
+
+boards([]).
+countOcorrences([]).
+
 isEmpty(Piece) :-
     Piece=empty.
 
@@ -38,9 +44,12 @@ isWhite(Player, Piece) :-
 
 /**
  * Player vs player gamemode.
- */pvp_play:-
+ */
+pvp_play :-
     nextPlayer(P),
     board(Board),
+    boards(Boards),
+    countOcorrences(CountOcurrences),
     display_game(Board, P),
     valid_moves(Board, P, ListOfMoves),
     write('\nHere are the valid Moves:\n'),
@@ -50,12 +59,36 @@ isWhite(Player, Piece) :-
     retract(nextPlayer(P)),
     retract(board(Board)),
     assert(board(NewBoard)),
-    display_game(NewBoard, P),
     (   P==1,
         assert(nextPlayer(2))
     ;   P==2,
         assert(nextPlayer(1))
+    ),
+    (
+        (   
+            write(Boards),
+            member(NewBoard, Boards),
+            nth0(Index, Boards, NewBoard),
+            nth0(Index, CountOcurrences, Count),
+            NewCount is Count+1,
+            replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
+            retract(countOcorrences(CountOcurrences)),
+            assert(countOcorrences(NewCountOcurrences))
+        )
+    ;
+        (   append(Boards, [NewBoard], TempNewBoards),
+            append(CountOcurrences, [1], TempNewCount),
+            retract(boards(Boards)),
+            retract(countOcorrences(CountOcurrences)),
+            assert(boards(TempNewBoards)),
+            assert(countOcorrences(TempNewCount))
+        )
     ).
+
+replace([H|T], I, X, [H|R]):- 
+    I > 0, 
+    I1 is I-1, 
+    replace(T, I1, X, R).
 
 pvp :-
     pvp_play,
@@ -65,8 +98,10 @@ pvp :-
         write('Player 1 won\n')
     ;   Winner=white,
         write('Player 2 won\n')
+    ;   Winner=draw,
+        write('There was a draw!\n')
     ;   pvp
-    ).
+    ). 
 %pvb.
 %bvb. 
 
@@ -301,6 +336,8 @@ game_over(_Board, Winner) :-
     game_over_col(Winner).
 game_over(_Board, Winner) :- 
     game_over_diag(Winner).
+game_over(_Board, Winner):-
+    game_over_draw(Winner).
 
 /**
  * Checks if three given numbers are consecutive.
@@ -345,6 +382,17 @@ areConsecutiveDiag(Pieces) :-
     areNumbersConsecutive(F1, S1, T1),
     areNumbersConsecutive(F2, S2, T2).
 
+
+game_over_draw(Winner):-
+    countOcorrences(Count),
+    write(Count),
+    member(3, Count),
+    Winner = draw.
+
+game_over_draw(Winner):-
+    Winner = none.
+
+
 /**
  * Checks if a player has three consecutive pieces in a same row, thus winning the game.
  */
@@ -357,9 +405,6 @@ game_over_row(Winner) :-
     getWhitePieces(Pieces),
     areConsecutiveHor(Pieces),
     Winner=white.
-
-game_over_row(Winner):-
-    Winner = none.
 
 /**
  * Checks if a player has three consecutive pieces in a same diagonal, thus winning the game.
@@ -374,9 +419,6 @@ game_over_diag(Winner) :-
     areConsecutiveDiag(Pieces),
     Winner=white.
 
-game_over_diag(Winner) :-
-    Winner=none.
-
 /**
  * Checks if a player has three consecutive pieces in a same column, thus winning the game.
  */
@@ -389,9 +431,6 @@ game_over_col(Winner) :-
     getWhitePieces(Pieces),
     areConsecutiveVer(Pieces),
     Winner=white.
-
-game_over_col(Winner) :-
-    Winner=none.
 
 /**
  * Return the value for the winner of the game.
