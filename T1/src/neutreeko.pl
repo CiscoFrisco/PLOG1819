@@ -1,29 +1,12 @@
 :- consult('display.pl').
 :- consult('ai.pl').
+:- consult('logic.pl').
 
 :- use_module(library(lists)).
 
 
 :- (dynamic board/1).
 board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]]).
-
-:- (dynamic nextPlayer/1).
-nextPlayer(1).
-
-:- (dynamic p1_1/2).
-:- (dynamic p1_2/2).
-:- (dynamic p1_3/2).
-:- (dynamic p2_1/2).
-:- (dynamic p2_2/2).
-:- (dynamic p2_3/2).
-
-p1_1(5, 2).
-p1_2(5, 4).
-p1_3(2, 3).
-
-p2_1(1, 2).
-p2_2(1, 4).
-p2_3(4, 3).
 
 :- (dynamic boards/1).
 :- (dynamic countOcorrences/1).
@@ -41,6 +24,34 @@ isBlack(Player, Piece) :-
 isWhite(Player, Piece) :-
     Player=2,
     Piece=white.
+
+pvb_play:-
+    nextPlayer(P),
+    board(Board),
+    display_game(Board, P),
+    (
+        (P = 1, 
+            (
+                valid_moves(Board, P, ListOfMoves),
+                write('\nHere are the valid Moves:\n'),
+                displayValidMoves(ListOfMoves, 1),
+                chooseMove(ListOfMoves, Move)
+            )
+        )
+        ;
+        (
+            choose_move(Board, 1, Move)  
+        )
+    ),
+    move(Move, Board, NewBoard),
+    retract(nextPlayer(P)),
+    retract(board(Board)),
+    assert(board(NewBoard)),
+    (   P==1,
+        assert(nextPlayer(2))
+    ;   P==2,
+        assert(nextPlayer(1))
+    ).
 
 /**
  * Player vs player gamemode.
@@ -102,18 +113,20 @@ pvp :-
         write('There was a draw!\n')
     ;   pvp
     ). 
-%pvb.
+
+pvb :-
+    pvb_play,
+    board(Board),
+    game_over(Board, Winner),
+    (   Winner=black,
+        write('Player 1 won\n')
+    ;   Winner=white,
+        write('AI won\n')
+    ;   Winner=draw,
+        write('There was a draw!\n')
+    ;   pvb
+    ). 
 %bvb. 
-
-setPiece(1,1,[[_El|Resto1]|Resto2],[[Peca|Resto1]|Resto2],Peca).
-
-setPiece(1,N,[[Elem|Resto1]|Resto2], [[Elem|Head]|Resto2],Peca):- 
-	Next is N-1,
-	setPiece(1,Next,[Resto1|Resto2],[Head|Resto2],Peca).
-
-setPiece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):- 
-	Next is N-1,
-	setPiece(Next,NColuna,Resto1,Out,Peca).
 
 getPiece(LineN,ColN,Board,Piece):-
     nth1(LineN,Board,Line),
@@ -195,31 +208,7 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,Co
     /*else*/(valid_diagonal(Board, [NextLine,NextCol], [InitLine,InitCol] , List, Moves , LineInc,ColInc))
     ).
 
-isDuplicate([InitLine,InitCol,DestLine,DestCol]):-
-    InitLine = DestLine, 
-    InitCol = DestCol.
 
-discardDuplicateMoves([], NewList, NewList).
-
-discardDuplicateMoves([Head | Tail], TempList, NewList):-
-        (isDuplicate(Head),discardDuplicateMoves(Tail, TempList, NewList));
-        (discardDuplicateMoves(Tail, [Head | TempList], NewList)).
-
-valid_moves_piece(_Board,[],ListOfMoves,ListOfMoves).
-
-valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
-    Init = Head,
-    Curr = Head,
-    valid_horizontal(Board, Curr, Init, [], HorMoves, -1),
-    valid_vertical(Board, Curr, Init, HorMoves, HorVertMoves, -1),
-    valid_diagonal(Board, Curr, Init, HorVertMoves, AllMoves, -1, -1),
-    discardDuplicateMoves(AllMoves, [], NewAllMoves),
-    valid_moves_piece(Board,Tail, [NewAllMoves | List], ListOfMoves).
-
-
-valid_moves(Board, Player, ListOfMoves):-
-    getPieces(Player, Pieces),
-    valid_moves_piece(Board,Pieces,[], ListOfMoves).
 
 getChar(Col,Char):-
     TempCol is Col + 64,
@@ -292,39 +281,9 @@ getWhitePieces(Pieces):-
     Pieces = [[A,B],[C,D],[E,F]].
 
 
-set(Piece, Piece).
 
 
-updatePiece(InitLine,InitCol,DestLine,DestCol,Player):-
-    
-(Player = 1,
-    (
-        (p1_1(A,B), A= InitLine,B=InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
-        (p1_2(A,B), A= InitLine,B=InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
-        (p1_3(A,B), A= InitLine,B=InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol)))
-    )
-);
-(Player = 2,
-    (
-        (p2_1(A,B), A= InitLine,B=InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
-        (p2_2(A,B), A= InitLine,B=InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
-        (p2_3(A,B), A= InitLine,B=InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol)))
-    )
-).
 
-/**
- * Performs a move, changing the given piece to a new position, and puts an empty piece on
- * the original one.
- */
-move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
-    nextPlayer(Player),
-    (   Player=1
-    ->  set(black, Piece)
-    ;   set(white, Piece)
-    ),
-    setPiece(InitLine, InitCol, Board, TempBoard, empty),
-    setPiece(DestLine, DestCol, TempBoard, NewBoard, Piece),
-    updatePiece(InitLine,InitCol,DestLine,DestCol, Player).
 
 /**
  * Checks if there's a winner and returns it. A game is over if someone connected its
@@ -385,7 +344,6 @@ areConsecutiveDiag(Pieces) :-
 
 game_over_draw(Winner):-
     countOcorrences(Count),
-    write(Count),
     member(3, Count),
     Winner = draw.
 
@@ -432,24 +390,7 @@ game_over_col(Winner) :-
     areConsecutiveVer(Pieces),
     Winner=white.
 
-/**
- * Return the value for the winner of the game.
- */ 
-winner(black, Value) :-
-    Value=10.
-winner(white, Value):- 
-    Value = -10.
-winner(none, Value):- 
-    Value = 0.
-
 % https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-2-evaluation-function/
-
-/**
- * Return value for the current state of the game. Used by minimax.
- */ 
-value(Board, _Player, Value):-
-    game_over(Board, Winner),
-    winner(Winner, Value).
 
 /**
  * Entry point for the game. Prints the main menu, reads user's choice and redirects to
@@ -471,9 +412,9 @@ chooseOption(1) :-
 /**
  * Start Player vs Computer gamemode and redirect to main menu when it's over.
  */
-% chooseOption(2):-
-%     pvc,
-%     play.
+chooseOption(2):-
+     pvb,
+     play.
 
 /**
  * Start Computer vs Computer gamemode and redirect to main menu when it's over.
