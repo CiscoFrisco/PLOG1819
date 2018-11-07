@@ -22,7 +22,6 @@ pvb_play:-
         (P = 1, 
             (
                 valid_moves(Board, P, ListOfMoves),
-                write(ListOfMoves),
                 write('\nHere are the valid Moves:\n'),
                 displayValidMoves(ListOfMoves, 1),
                 chooseMove(ListOfMoves, Move)
@@ -30,7 +29,7 @@ pvb_play:-
         ;
         (
             write('antes\n'),        
-            choose_move(Board, 2, Move, P),
+            choose_move(Board, 2, Move),
             write('depois\n')        
         )
     ),

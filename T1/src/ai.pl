@@ -3,22 +3,28 @@
 not(X):- X, !, fail.
 not(_X).
 
-siga(_Board, _Level, [_], _BestVal, _BestMove).
+movesPiece([], RestPieces, Board, Level, BestVal, BestMove):- 
+    siga(Board, Level, RestPieces, BestVal, BestMove).
 
-siga(Board, Level, [Move|Rest], BestVal, BestMove):-
-    write('FODA-SE\n'),
+
+movesPiece([Move | Rest], RestPieces, Board, Level, BestVal, BestMove):-
     move(Move, Board, _NewBoard),
-    write('siga1\n'),
-    minimax(Board, Level, false, MoveVal),     write('siga2\n'),
-
-    (
-        MoveVal > BestVal, 
+    write(Level),
+    minimax(Board, Level, false, MoveVal),     
+    write('siga2\n'),
+    ( 
         (
-            BestMove is Move,
-            BestVal is MoveVal
-        )
-    ),
-    siga(Board, Level, Rest, BestVal, BestMove).
+            MoveVal > BestVal,
+            write('cheguei\n'), 
+            movesPiece( Rest, RestPieces, Board, Level, MoveVal, Move)
+        );
+        movesPiece( Rest, RestPieces, Board, Level, BestVal, BestMove)
+    ).
+
+siga(_Board, _Level, [], _BestVal, _BestMove).
+
+siga(Board, Level, [MovesPiece|RestPieces], BestVal, BestMove):-
+    movesPiece(MovesPiece, RestPieces, Board,Level, BestVal, BestMove).   
 
 findBestMove(Board, Level, ValidMoves, BestMove):-
     BestVal is -1000,
@@ -84,7 +90,8 @@ winner(none, Value):-
 winner(draw, Value):- 
     Value = 0.
 
-choose_move(Board, Level, Move, Player):-
+choose_move(Board, Level, Move):-
+    nextPlayer(Player),
     valid_moves(Board, Player, ValidMoves),
-    write(Board), write(Player),
-    findBestMove(Board,Level,ValidMoves,Move).
+    findBestMove(Board,Level,ValidMoves,Move),
+    write(Move).
