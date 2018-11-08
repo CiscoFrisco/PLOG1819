@@ -47,9 +47,9 @@ display_line([]).
 
 display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
     write(Counter),write('. '),
-    write(InitLine), get_char(InitCol,InitChar),write(InitChar),
+    write(InitLine), get_char_index(InitCol,InitChar),write(InitChar),
     write(' -> '),
-    write(DestLine), get_char(DestCol,DestChar),write(DestChar),nl.
+    write(DestLine), get_char_index(DestCol,DestChar),write(DestChar),nl.
 
 display_valid_moves_piece([], Counter,Counter).
 

@@ -3,7 +3,7 @@ replace([H|T], I, X, [H|R]):-
     I1 is I-1, 
     replace(T, I1, X, R).
 
-get_char(Col,Char):-
+get_char_index(Col,Char):-
     TempCol is Col + 64,
     char_code(Char,TempCol).
 

@@ -25,7 +25,7 @@ pvb :-
     ). 
 
 bvb_play :-
-    next_player(P),
+    nextPlayer(P),
     board(Board),
     display_game(Board, P),
     choose_move(Board, 1, Move, P),
@@ -54,7 +54,7 @@ bvb :-
     ). 
 
 pvb_play :-
-    next_player(P),
+    nextPlayer(P),
     board(Board),
     display_game(Board, P),
     (   P=1,
@@ -80,7 +80,7 @@ pvb_play :-
  * Player vs player gamemode.
  */
 pvp_play :-
-    next_player(P),
+    nextPlayer(P),
     board(Board),
     boards(Boards),
     countOcorrences(CountOcurrences),

@@ -12,10 +12,10 @@
  * the given option.
  */  
 play :-
-    printMainMenu,
+    print_main_menu,
     write('Choose an option '),
     read(Option),
-    chooseOption(Option).
+    choose_option(Option).
 
 
 

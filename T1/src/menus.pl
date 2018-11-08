@@ -23,7 +23,7 @@ choose_option(3):-
  * Print rules and return to main menu.
  */
 choose_option(4) :-
-    printRules,
+    print_rules,
     play.
 
 /**
