@@ -9,42 +9,6 @@ symbol(white, S) :-
     S=' x '.
 
 /**
- * Displays the game rules on the screen.
- */
-printRules :-
-    nl,
-    write('Welcome to Neutreeko!'),
-    nl,
-    write('Each player takes turns. First one plays black. (o)'),
-    nl,
-    write('In each move, the piece can go in every direction, but it will only stop when it reaches an obstacle, or the edge of the board.'),
-    nl,
-    write('In order to win, connect your three pieces, in whichever direction.'),
-    nl,
-    write('Good luck!'),
-    nl,
-    nl.
-
-/**
- * Prints the main menu on the screen.
- */ 
-printMainMenu :-
-    nl,
-    write('Neutreeko'),
-    nl,
-    write('1. Player vs Player'),
-    nl,
-    write('2. Player vs Computer'),
-    nl,
-    write('3. Computer vs Computer'),
-    nl,
-    write('4. Rules'),
-    nl,
-    write('0. Exit game'),
-    nl,
-    nl.
-
-/**
  * Displays the current board on the screen, and indicates 
  * which player has the current turn.
  */
@@ -80,3 +44,22 @@ display_line([Head | Tail]):-
     write('|'),
     display_line(Tail).
 display_line([]).
+
+display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
+    write(Counter),write('. '),
+    write(InitLine), get_char(InitCol,InitChar),write(InitChar),
+    write(' -> '),
+    write(DestLine), get_char(DestCol,DestChar),write(DestChar),nl.
+
+display_valid_moves_piece([], Counter,Counter).
+
+display_valid_moves_piece([Head | Tail],Counter, FinalCounter):- 
+    display_valid_move(Head, Counter),
+    NewCounter is Counter + 1,
+    display_valid_moves_piece(Tail,NewCounter, FinalCounter).
+
+display_valid_moves([], _Counter).
+
+display_valid_moves([Head | Tail],Counter):-
+    display_valid_moves_piece(Head,Counter,NextCounter),
+    display_valid_moves(Tail, NextCounter).

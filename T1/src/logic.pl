@@ -307,3 +307,49 @@ game_over_col(Winner) :-
     getWhitePieces(Pieces),
     areConsecutiveVer(Pieces),
     Winner=white.
+
+
+isEmpty(Piece) :-
+    Piece=empty.
+
+isBlack(Player, Piece) :-
+    Player=1,
+    Piece=black.
+
+isWhite(Player, Piece) :-
+    Player=2,
+    Piece=white.
+
+choose_player_move(ListOfMoves,Move):- 
+    write('\nMove?'),
+    read(Option),
+    (getMove(Option,ListOfMoves, Move) -> true ; write('Please choose a valid option.\n'), choose_player_move(ListOfMoves,Move)).
+
+getMovePiece(1, [Head | _Tail], _Pieces, Head).
+
+getMovePiece(Option,[],[_Piece | Rest], Move):-
+    getMove(Option, Rest , Move).
+    
+getMovePiece(Option,[_Head | Tail], [Piece | Rest], Move):-
+    NextOption is Option - 1,
+    getMovePiece(NextOption, Tail, [Piece | Rest] , Move).
+
+getMove(Option, [Head | Tail], Move):-
+    getMovePiece(Option, Head, [Head | Tail], Move).
+
+handle_draw(NewBoard, Boards, CountOcurrences) :-
+    (   write(Boards),
+        member(NewBoard, Boards),
+        nth0(Index, Boards, NewBoard),
+        nth0(Index, CountOcurrences, Count),
+        NewCount is Count+1,
+        replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
+        retract(countOcorrences(CountOcurrences)),
+        assert(countOcorrences(NewCountOcurrences))
+    ;   append(Boards, [NewBoard], TempNewBoards),
+        append(CountOcurrences, [1], TempNewCount),
+        retract(boards(Boards)),
+        retract(countOcorrences(CountOcurrences)),
+        assert(boards(TempNewBoards)),
+        assert(countOcorrences(TempNewCount))
+    ).
