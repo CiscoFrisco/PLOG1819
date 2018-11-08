@@ -51,9 +51,7 @@ set_piece(1,N,[[Elem|Resto1]|Resto2], [[Elem|Head]|Resto2],Peca):-
 	set_piece(1,Next,[Resto1|Resto2],[Head|Resto2],Peca).
 
 set_piece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):- 
-    write(N),nl,
     Next is N-1,
-    write(Next),nl,
 	set_piece(Next,NColuna,Resto1,Out,Peca).
 
 /**
@@ -62,16 +60,12 @@ set_piece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):-
  */
 move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     nextPlayer(Player),
-    write('move\n'),
     (   Player=1
     ->  set(black, Piece)
     ;   set(white, Piece)
     ),
-    write('move\n'),
-    set_piece(InitLine, InitCol, Board, TempBoard, empty),    write('move\n'),
-
-    set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),     write('move\n'),
-
+    set_piece(InitLine, InitCol, Board, TempBoard, empty), 
+    set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),
     update_piece(InitLine,InitCol,DestLine,DestCol, Player).
 
 is_duplicate([InitLine,InitCol,DestLine,DestCol]):-
