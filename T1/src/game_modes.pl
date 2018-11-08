@@ -2,12 +2,19 @@ pvp :-
     pvp_play,
     board(Board),
     game_over(Board, Winner),
-    (   Winner=black,
-        write('Player 1 won\n')
-    ;   Winner=white,
-        write('Player 2 won\n')
-    ;   Winner=draw,
-        write('There was a draw!\n')
+    (
+        (
+            Winner=black,
+            write('Player 1 won\n')
+        )
+    ;   ( 
+            Winner=white,
+            write('Player 2 won\n')
+        )
+    ;   (
+            Winner=draw,
+            write('There was a draw!\n')
+        )
     ;   pvp
     ). 
 

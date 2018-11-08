@@ -51,7 +51,9 @@ set_piece(1,N,[[Elem|Resto1]|Resto2], [[Elem|Head]|Resto2],Peca):-
 	set_piece(1,Next,[Resto1|Resto2],[Head|Resto2],Peca).
 
 set_piece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):- 
-	Next is N-1,
+    write(N),nl,
+    Next is N-1,
+    write(Next),nl,
 	set_piece(Next,NColuna,Resto1,Out,Peca).
 
 /**
@@ -60,12 +62,16 @@ set_piece(N, NColuna, [Elem |Resto1],[Elem|Out], Peca):-
  */
 move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     nextPlayer(Player),
+    write('move\n'),
     (   Player=1
     ->  set(black, Piece)
     ;   set(white, Piece)
     ),
-    set_piece(InitLine, InitCol, Board, TempBoard, empty),
-    set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),
+    write('move\n'),
+    set_piece(InitLine, InitCol, Board, TempBoard, empty),    write('move\n'),
+
+    set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),     write('move\n'),
+
     update_piece(InitLine,InitCol,DestLine,DestCol, Player).
 
 is_duplicate([InitLine,InitCol,DestLine,DestCol]):-
@@ -337,15 +343,18 @@ get_move(Option, [Head | Tail], Move):-
     get_move_piece(Option, Head, [Head | Tail], Move).
 
 handle_draw(NewBoard, Boards, CountOcurrences) :-
-    (   write(Boards),
-        member(NewBoard, Boards),
-        nth0(Index, Boards, NewBoard),
-        nth0(Index, CountOcurrences, Count),
-        NewCount is Count+1,
-        replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
-        retract(countOcorrences(CountOcurrences)),
-        assert(countOcorrences(NewCountOcurrences))
-    ;   append(Boards, [NewBoard], TempNewBoards),
+    (member(NewBoard, Boards),
+        (
+            nth0(Index, Boards, NewBoard),
+            nth0(Index, CountOcurrences, Count),
+            NewCount is Count+1,
+            replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
+            retract(countOcorrences(CountOcurrences)),
+            assert(countOcorrences(NewCountOcurrences))
+        )
+    );   
+    (
+        append(Boards, [NewBoard], TempNewBoards),
         append(CountOcurrences, [1], TempNewCount),
         retract(boards(Boards)),
         retract(countOcorrences(CountOcurrences)),

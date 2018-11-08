@@ -1,3 +1,4 @@
+replace([_|_T], 0, X, [X|_T]).
 replace([H|T], I, X, [H|R]):- 
     I > 0, 
     I1 is I-1, 
