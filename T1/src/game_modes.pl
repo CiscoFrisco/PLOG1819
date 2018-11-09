@@ -5,15 +5,21 @@ pvp :-
     (
         (
             Winner=black,
-            write('Player 1 won\n')
+            write('\nPlayer 1 won\n'),
+            show_board(Board, 1),
+            resetData
         )
     ;   ( 
             Winner=white,
-            write('Player 2 won\n')
+            write('\nPlayer 2 won\n'),
+            show_board(Board, 1),
+            resetData
         )
     ;   (
             Winner=draw,
-            write('There was a draw!\n')
+            write('\nThere was a draw!\n'),
+            show_board(Board, 1),
+            resetData
         )
     ;   pvp
     ). 
@@ -23,11 +29,17 @@ pvb :-
     board(Board),
     game_over(Board, Winner),
     (   Winner=black,
-        write('Player 1 won\n')
+        write('\nPlayer 1 won\n'),
+        show_board(Board, 1)
+        % resetData
     ;   Winner=white,
-        write('AI won\n')
+        write('\nAI won\n'),
+        show_board(Board, 1)
+        % resetData
     ;   Winner=draw,
-        write('There was a draw!\n')
+        write('\nThere was a draw!\n'),
+        show_board(Board, 1)
+        % resetData
     ;   pvb
     ). 
 
@@ -35,7 +47,7 @@ bvb_play :-
     nextPlayer(P),
     board(Board),
     display_game(Board, P),
-    choose_move(Board, 1, Move, P),
+    choose_move(Board,2, Move, P),
     move(Move, Board, NewBoard),
     retract(nextPlayer(P)),
     retract(board(Board)),
@@ -52,16 +64,23 @@ bvb :-
     board(Board),
     game_over(Board, Winner),
     (   Winner=black,
-        write('Player 1 won\n')
+        write('\nPlayer 1 won\n'),
+        show_board(Board, 1)
+        % resetData
     ;   Winner=white,
-        write('AI won\n')
+        write('\nPlayer 2 won\n'),
+        show_board(Board, 1)
+        % resetData
     ;   Winner=draw,
-        write('There was a draw!\n')
+        write('\nThere was a draw!\n'),
+        show_board(Board, 1)
+        % resetData
     ;   bvb
     ). 
 
 pvb_play :-
     nextPlayer(P),
+    difficulty(Difficulty),
     board(Board),
     display_game(Board, P),
     (
@@ -74,7 +93,7 @@ pvb_play :-
         )
         ;  
         ( 
-            choose_move(Board, 5, Move)
+            choose_move(Board, Difficulty, Move)
         )
     ),
     move(Move, Board, NewBoard),

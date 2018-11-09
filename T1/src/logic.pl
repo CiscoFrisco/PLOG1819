@@ -2,6 +2,9 @@
 :- (dynamic nextPlayer/1).
 nextPlayer(1).
 
+:- (dynamic difficulty/1).
+difficulty(2).
+
 :- (dynamic p1_1/2).
 :- (dynamic p1_2/2).
 :- (dynamic p1_3/2).
@@ -26,6 +29,38 @@ countOcorrences([]).
 board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]]).
 
 set(Piece, Piece).
+
+resetData:-
+    board(Board),
+    retract(board(Board)),
+    assert(board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]])),
+    boards(Boards),
+    retract(boards(Boards)),
+    assert(board([])),
+    countOcorrences(CountOcorrences),
+    retract(countOcurrences(CountOcorrences)),
+    assert(countOcurrences([])),
+    nextPlayer(Player),
+    retract(nextPlayer(Player)),
+    assert(nextPlayer(1)),
+    p1_1(A,B),
+    retract(p1_1(A,B)),
+    assert(p1_1(5,2)),
+    p1_2(C,D),
+    retract(p1_2(C,D)),
+    assert(p1_2(5,4)),
+    p1_3(E,F),
+    retract(p1_3(E,F)),
+    assert(p1_3(2,3)),
+    p2_1(G,H),
+    retract(p2_1(G,H)),
+    assert(p2_1(1,2)),
+    p2_2(I,J),
+    retract(p2_2(I,J)),
+    assert(p2_2(1,4)),
+    p2_3(K,L),
+    retract(p2_3(K,L)),
+    assert(p2_3(4,3)).
 
 update_piece(InitLine,InitCol,DestLine,DestCol,Player):-
     (Player = 1,
@@ -274,12 +309,12 @@ game_over_draw(Winner):-
 game_over_row(Winner) :-
     get_white_pieces(Pieces),
     are_consecutive_hor(Pieces),
-    Winner=black.
+    Winner=white.
 
 game_over_row(Winner) :-
     get_black_pieces(Pieces),
     are_consecutive_hor(Pieces),
-    Winner=white.
+    Winner=black.
 
 /**
  * Checks if a player has three consecutive pieces in a same diagonal, thus winning the game.
