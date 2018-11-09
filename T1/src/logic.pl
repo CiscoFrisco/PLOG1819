@@ -28,19 +28,18 @@ board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty],
 set(Piece, Piece).
 
 update_piece(InitLine,InitCol,DestLine,DestCol,Player):-
-    
     (Player = 1,
-        (
-            (p1_1(A,B), A= InitLine,B=InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
-            (p1_2(A,B), A= InitLine,B=InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
-            (p1_3(A,B), A= InitLine,B=InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol)))
+        ( 
+            (p1_1(A,B), A = InitLine,B = InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
+            (p1_2(A,B), A = InitLine,B = InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
+            (p1_3(A,B), A = InitLine,B = InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol)))
         )
     );
     (Player = 2,
         (
-            (p2_1(A,B), A= InitLine,B=InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
-            (p2_2(A,B), A= InitLine,B=InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
-            (p2_3(A,B), A= InitLine,B=InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol)))
+            (p2_1(A,B), A = InitLine,B = InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
+            (p2_2(A,B), A = InitLine,B = InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
+            (p2_3(A,B), A = InitLine,B = InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol)))
         )
     ).
 
@@ -64,7 +63,7 @@ move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     ->  set(black, Piece)
     ;   set(white, Piece)
     ),
-    set_piece(InitLine, InitCol, Board, TempBoard, empty), 
+    set_piece(InitLine, InitCol, Board, TempBoard, empty),
     set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),
     update_piece(InitLine,InitCol,DestLine,DestCol, Player).
 
@@ -327,7 +326,7 @@ choose_player_move(ListOfMoves,Move):-
 get_move_piece(1, [Head | _Tail], _Pieces, Head).
 
 get_move_piece(Option,[],[_Piece | Rest], Move):-
-    getMove(Option, Rest , Move).
+    get_move(Option, Rest , Move).
     
 get_move_piece(Option,[_Head | Tail], [Piece | Rest], Move):-
     NextOption is Option - 1,

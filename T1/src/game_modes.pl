@@ -64,14 +64,18 @@ pvb_play :-
     nextPlayer(P),
     board(Board),
     display_game(Board, P),
-    (   P=1,
-        valid_moves(Board, P, ListOfMoves),
-        write('\nHere are the valid Moves:\n'),
-        display_valid_moves(ListOfMoves, 1),
-        choose_player_move(ListOfMoves, Move)
-    ;   write('antes\n'),
-        choose_move(Board, 2, Move),
-        write('depois\n')
+    (
+        (   
+            P=1,
+            valid_moves(Board, P, ListOfMoves),
+            write('\nHere are the valid Moves:\n'),
+            display_valid_moves(ListOfMoves, 1),
+            choose_player_move(ListOfMoves, Move)
+        )
+        ;  
+        ( 
+            choose_move(Board, 5, Move)
+        )
     ),
     move(Move, Board, NewBoard),
     retract(nextPlayer(P)),
