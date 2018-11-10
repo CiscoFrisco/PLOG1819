@@ -6,20 +6,17 @@ pvp :-
         (
             Winner=black,
             write('\nPlayer 1 won\n'),
-            show_board(Board, 1),
-            resetData
+            show_board(Board, 1)
         )
     ;   ( 
             Winner=white,
             write('\nPlayer 2 won\n'),
-            show_board(Board, 1),
-            resetData
+            show_board(Board, 1)
         )
     ;   (
             Winner=draw,
             write('\nThere was a draw!\n'),
-            show_board(Board, 1),
-            resetData
+            show_board(Board, 1)
         )
     ;   pvp
     ). 
@@ -52,18 +49,19 @@ pvb :-
     pvb_play,
     board(Board),
     game_over(Board, Winner),
-    (   Winner=black,
+    (
+        (   Winner=black,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)
-        % resetData
-    ;   Winner=white,
+        )
+    ;   (Winner=white,
         write('\nAI won\n'),
         show_board(Board, 1)
-        % resetData
-    ;   Winner=draw,
+    )
+    ;   (Winner=draw,
         write('\nThere was a draw!\n'),
         show_board(Board, 1)
-        % resetData
+    )
     ;   pvb
     ). 
 
@@ -102,18 +100,20 @@ bvb :-
     bvb_play,
     board(Board),
     game_over(Board, Winner),
-    (   Winner=black,
+    (   
+        (Winner=black,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)
-        % resetData
-    ;   Winner=white,
+        )
+    ;  
+    ( Winner=white,
         write('\nPlayer 2 won\n'),
         show_board(Board, 1)
-        % resetData
-    ;   Winner=draw,
+    )
+    ;   
+    (Winner=draw,
         write('\nThere was a draw!\n'),
-        show_board(Board, 1)
-        % resetData
+        show_board(Board, 1))
     ;   bvb
     ). 
 

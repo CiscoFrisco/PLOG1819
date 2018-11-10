@@ -3,7 +3,7 @@
 nextPlayer(1).
 
 :- (dynamic difficulty/1).
-difficulty(5).
+difficulty(2).
 
 :- (dynamic p1_1/2).
 :- (dynamic p1_2/2).
@@ -36,10 +36,10 @@ resetData:-
     assert(board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]])),
     boards(Boards),
     retract(boards(Boards)),
-    assert(board([])),
+    assert(boards([])),
     countOcorrences(CountOcorrences),
-    retract(countOcurrences(CountOcorrences)),
-    assert(countOcurrences([])),
+    retract(countOcorrences(CountOcorrences)),
+    assert(countOcorrences([])),
     nextPlayer(Player),
     retract(nextPlayer(Player)),
     assert(nextPlayer(1)),

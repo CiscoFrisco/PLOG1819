@@ -3,6 +3,7 @@
  */
 choose_option(1) :-
     pvp,
+    resetData,
     play.
 
 /**
@@ -10,6 +11,7 @@ choose_option(1) :-
  */
 choose_option(2):-
      pvb,
+     resetData,
      play.
 
 /**
@@ -17,6 +19,7 @@ choose_option(2):-
  */
 choose_option(3):-
     bvb,
+    resetData,
     play.
 
 /**
