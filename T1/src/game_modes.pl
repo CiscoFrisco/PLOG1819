@@ -1,3 +1,4 @@
+% Player vs. Player game mode
 pvp :-
     pvp_play,
     board(Board),
@@ -21,9 +22,7 @@ pvp :-
     ;   pvp
     ). 
 
-    /**
- * Player vs player gamemode.
- */
+% Game turn for Player vs. Player game mode.
 pvp_play :-
     nextPlayer(P),
     board(Board),
@@ -45,6 +44,7 @@ pvp_play :-
     ),
     handle_draw(NewBoard, Boards, CountOcurrences).
 
+% Player vs. Bot gamemode
 pvb :-
     pvb_play,
     board(Board),
@@ -65,6 +65,7 @@ pvb :-
     ;   pvb
     ). 
 
+% Game turn for Player vs. Bot gamemode
 pvb_play :-
     nextPlayer(P),
     difficulty(Difficulty),
@@ -96,6 +97,7 @@ pvb_play :-
     ),
     handle_draw(NewBoard, Boards, CountOcurrences).
 
+% Bot vs. Bot gamemode
 bvb :-
     bvb_play,
     board(Board),
@@ -117,6 +119,7 @@ bvb :-
     ;   bvb
     ). 
 
+% Game turn for Bot vs. Bot gamemode
 bvb_play :-
     nextPlayer(P),
     board(Board),

@@ -52,6 +52,9 @@ print_rules :-
     write('In order to win, connect your three pieces, in whichever direction.\n'),
     write('Good luck!\n'). 
 
+/**
+ * Allows the user to choose bot difficulty.
+ */ 
 choose_difficulty:-
     difficulty(Difficulty),
     write('\nBot difficulty\n'),

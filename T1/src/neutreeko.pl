@@ -16,6 +16,3 @@ play :-
     write('Choose an option '),
     read(Option),
     choose_option(Option).
-
-
-

@@ -45,6 +45,7 @@ display_line([Head | Tail]):-
     display_line(Tail).
 display_line([]).
 
+% Display a valid move for the player
 display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
     write(Counter),write('. '),
     write(InitLine), get_char_index(InitCol,InitChar),write(InitChar),
@@ -53,11 +54,13 @@ display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
 
 display_valid_moves_piece([], Counter,Counter).
 
+% Displays valid moves for a piece
 display_valid_moves_piece([Head | Tail],Counter, FinalCounter):- 
     display_valid_move(Head, Counter),
     NewCounter is Counter + 1,
     display_valid_moves_piece(Tail,NewCounter, FinalCounter).
 
+% Display valid moves for the player
 display_valid_moves([], _Counter).
 
 display_valid_moves([Head | Tail],Counter):-
