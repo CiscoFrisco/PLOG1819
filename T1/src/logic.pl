@@ -3,7 +3,7 @@
 nextPlayer(1).
 
 :- (dynamic difficulty/1).
-difficulty(2).
+difficulty(5).
 
 :- (dynamic p1_1/2).
 :- (dynamic p1_2/2).
