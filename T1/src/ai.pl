@@ -114,19 +114,26 @@ choose_move(Board, Level, Move):-
     valid_moves(Board, Player, ValidMoves),
     find_best_move(Board,Level,ValidMoves,Move).
 
+% choose_move(Pos, Level, NextPos):-
+%     alphabeta(Pos, -1000, 1000, NextPos, _, Level).
+
 % Generic alpha beta algorithm from Bratko's Prolog programming for artificial intelligence
 alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth) :-
     moves(Pos, PosList),!,
     boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth);
     staticval(Pos, Val).
 
+% pos [JOGADOR, JOGADA (win/draw/play), TABULEIRO]
+% gerar lista com todas as posicoes validas a partir de pos (verificar final de jogo, e nesse caso dar fail)
 moves(Pos, PosList).
 
-staticval(Pos, Val).
+staticval([,,_], 1).
+staticval([,,_], 0).
+staticval([,,_], -1).
 
-min_to_move(Pos).
+min_to_move([1,_, _]).
 
-max_to_move(Pos).
+max_to_move([2,_,_]).
 
 boundedbest([Pos | PosList], Alpha, Beta, GoodPos, GoodVal, Depth) :-
     NextDepth is Depth - 1, 

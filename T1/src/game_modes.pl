@@ -79,11 +79,12 @@ pvb_play :-
             valid_moves(Board, P, ListOfMoves),
             write('\nHere are the valid Moves:\n'),
             display_valid_moves(ListOfMoves, 1),
-            choose_player_move(ListOfMoves, Move)
+            choose_player_move(ListOfMoves, Move) 
+            %    , move(Move, Board, NewBoard) <- passa para aqui
         )
         ;  
         ( 
-            choose_move(Board, Difficulty, Move)
+            choose_move(Board, Difficulty, Move) % choose_move([P,play,Board], Difficulty, [_NextPlayer, State, NewBoard])
         )
     ),
     move(Move, Board, NewBoard),
