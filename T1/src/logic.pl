@@ -275,10 +275,10 @@ game_over(_Board, Winner):-
 game_over_draw(Winner):-
     countOcorrences(Count),
     member(3, Count),
-    Winner = draw.
+    Winner = -1.
 
 game_over_draw(Winner):-
-    Winner = none.
+    Winner = 0.
 
 /**
  * Checks if a player has three consecutive pieces in a same row, thus winning the game.
@@ -286,12 +286,12 @@ game_over_draw(Winner):-
 game_over_row(Winner) :-
     get_white_pieces(Pieces),
     are_consecutive_hor(Pieces),
-    Winner=white.
+    Winner=2.
 
 game_over_row(Winner) :-
     get_black_pieces(Pieces),
     are_consecutive_hor(Pieces),
-    Winner=black.
+    Winner=1.
 
 /**
  * Checks if a player has three consecutive pieces in a same diagonal, thus winning the game.
@@ -299,12 +299,12 @@ game_over_row(Winner) :-
 game_over_diag(Winner) :-
     get_black_pieces(Pieces),
     are_consecutive_diag(Pieces),
-    Winner=black.
+    Winner=1.
 
 game_over_diag(Winner) :-
     get_white_pieces(Pieces),
     are_consecutive_diag(Pieces),
-    Winner=white.
+    Winner=2.
 
 /**
  * Checks if a player has three consecutive pieces in a same column, thus winning the game.
@@ -312,12 +312,12 @@ game_over_diag(Winner) :-
 game_over_col(Winner) :-
     get_black_pieces(Pieces),
     are_consecutive_ver(Pieces),
-    Winner=black.
+    Winner=1.
 
 game_over_col(Winner) :-
     get_white_pieces(Pieces),
     are_consecutive_ver(Pieces),
-    Winner=white.
+    Winner=1.
 
 /**
  * Checks if three given numbers are consecutive.

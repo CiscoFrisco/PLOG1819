@@ -1,12 +1,9 @@
 /**
  * Associates a player with a piece symbol.
  */
-symbol(empty, S) :-
-    S='   '.
-symbol(black, S) :-
-    S=' o '.
-symbol(white, S) :-
-    S=' x '.
+symbol(empty, ' ').
+symbol(black, ' o ').
+symbol(white, ' x ').
 
 /**
  * Displays the current board on the screen, and indicates 

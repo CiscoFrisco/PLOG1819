@@ -5,17 +5,17 @@ pvp :-
     game_over(Board, Winner),
     (
         (
-            Winner=black,
+            Winner=1,
             write('\nPlayer 1 won\n'),
             show_board(Board, 1)
         )
     ;   ( 
-            Winner=white,
+            Winner=2,
             write('\nPlayer 2 won\n'),
             show_board(Board, 1)
         )
     ;   (
-            Winner=draw,
+            Winner=-1,
             write('\nThere was a draw!\n'),
             show_board(Board, 1)
         )
@@ -50,15 +50,15 @@ pvb :-
     board(Board),
     game_over(Board, Winner),
     (
-        (   Winner=black,
+        (   Winner=1,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)
         )
-    ;   (Winner=white,
+    ;   (Winner=2,
         write('\nAI won\n'),
         show_board(Board, 1)
     )
-    ;   (Winner=draw,
+    ;   (Winner=-1,
         write('\nThere was a draw!\n'),
         show_board(Board, 1)
     )
@@ -79,15 +79,14 @@ pvb_play :-
             valid_moves(Board, P, ListOfMoves),
             write('\nHere are the valid Moves:\n'),
             display_valid_moves(ListOfMoves, 1),
-            choose_player_move(ListOfMoves, Move) 
-            %    , move(Move, Board, NewBoard) <- passa para aqui
+            choose_player_move(ListOfMoves, Move),
+            move(Move, Board, NewBoard)
         )
         ;  
         ( 
-            choose_move(Board, Difficulty, Move) % choose_move([P,play,Board], Difficulty, [_NextPlayer, State, NewBoard])
+            choose_move(Board, Difficulty, NewBoard)
         )
     ),
-    move(Move, Board, NewBoard),
     retract(nextPlayer(P)),
     retract(board(Board)),
     assert(board(NewBoard)),
@@ -104,17 +103,17 @@ bvb :-
     board(Board),
     game_over(Board, Winner),
     (   
-        (Winner=black,
+        (Winner=1,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)
         )
     ;  
-    ( Winner=white,
+    ( Winner=2,
         write('\nPlayer 2 won\n'),
         show_board(Board, 1)
     )
     ;   
-    (Winner=draw,
+    (Winner=-1,
         write('\nThere was a draw!\n'),
         show_board(Board, 1))
     ;   bvb
@@ -128,8 +127,7 @@ bvb_play :-
     countOcorrences(CountOcurrences),
     difficulty(Difficulty),
     display_game(Board, P),
-    choose_move(Board,Difficulty, Move),
-    move(Move, Board, NewBoard),
+    choose_move(Board,Difficulty, NewBoard),
     retract(nextPlayer(P)),
     retract(board(Board)),
     assert(board(NewBoard)),
