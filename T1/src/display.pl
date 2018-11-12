@@ -1,7 +1,7 @@
 /**
  * Associates a player with a piece symbol.
  */
-symbol(empty, ' ').
+symbol(empty, '   ').
 symbol(black, ' o ').
 symbol(white, ' x ').
 

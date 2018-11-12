@@ -73,21 +73,15 @@ resetData :-
     assert(p2_3(4, 3)).
 
 % Updates a piece variable
-update_piece(InitLine,InitCol,DestLine,DestCol,Player):-
-    (Player = 1,
-        ( 
+update_piece(InitLine,InitCol,DestLine,DestCol,1):-
             (p1_1(A,B), A = InitLine,B = InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
             (p1_2(A,B), A = InitLine,B = InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
-            (p1_3(A,B), A = InitLine,B = InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol)))
-        )
-    );
-    (Player = 2,
-        (
-            (p2_1(A,B), A = InitLine,B = InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
-            (p2_2(A,B), A = InitLine,B = InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
-            (p2_3(A,B), A = InitLine,B = InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol)))
-        )
-    ).
+            (p1_3(A,B), A = InitLine,B = InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol))).
+
+update_piece(InitLine,InitCol,DestLine,DestCol,2):-
+    (p2_1(A,B), A = InitLine,B = InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
+    (p2_2(A,B), A = InitLine,B = InitCol, retract(p2_2(A,B)), assert(p2_2(DestLine,DestCol)));
+    (p2_3(A,B), A = InitLine,B = InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol))).
 
 % Sets a piece on the board list
 set_piece(1, 1, [[_El|Rest1]|Rest2], [[Piece|Rest1]|Rest2], Piece).
@@ -145,12 +139,11 @@ get_piece(LineN,ColN,Board,Piece):-
 /**
  * Returns the player's pieces positions on a list.
  */
-get_pieces(Player, Pieces) :-
-    (   Player=1,
-        get_black_pieces(Pieces)
-    ;   Player=2,
-        get_white_pieces(Pieces)
-    ).
+get_pieces(1, Pieces) :-
+    get_black_pieces(Pieces).
+
+get_pieces(2, Pieces) :-
+    get_white_pieces(Pieces).
 
 /**
  * Returns the black pieces positions on a list.
@@ -259,65 +252,56 @@ valid_moves(Board, Player, ListOfMoves):-
  * Checks if there's a winner and returns it. A game is over if someone connected its
  * three pieces horizontally, vertically or diagonally.
  */ 
-game_over(_Board, Winner) :- 
+game_over(Winner) :- 
     game_over_row(Winner).
-game_over(_Board, Winner) :- 
+game_over(Winner) :- 
     game_over_col(Winner).
-game_over(_Board, Winner) :- 
+game_over(Winner) :- 
     game_over_diag(Winner).
-game_over(_Board, Winner):-
+game_over(Winner):-
     game_over_draw(Winner).
 
 /*
  Checks if the same board configuration has happened 3 times (three-fold repetition),
  in which case a draw occurs.
  */
-game_over_draw(Winner):-
+game_over_draw(-1):-
     countOcorrences(Count),
-    member(3, Count),
-    Winner = -1.
+    member(3, Count).
 
-game_over_draw(Winner):-
-    Winner = 0.
+game_over_draw(0).
 
 /**
  * Checks if a player has three consecutive pieces in a same row, thus winning the game.
  */
-game_over_row(Winner) :-
+game_over_row(2) :-
     get_white_pieces(Pieces),
-    are_consecutive_hor(Pieces),
-    Winner=2.
+    are_consecutive_hor(Pieces).
 
-game_over_row(Winner) :-
+game_over_row(1) :-
     get_black_pieces(Pieces),
-    are_consecutive_hor(Pieces),
-    Winner=1.
-
+    are_consecutive_hor(Pieces).
 /**
  * Checks if a player has three consecutive pieces in a same diagonal, thus winning the game.
  */
-game_over_diag(Winner) :-
+game_over_diag(1) :-
     get_black_pieces(Pieces),
-    are_consecutive_diag(Pieces),
-    Winner=1.
+    are_consecutive_diag(Pieces).
 
-game_over_diag(Winner) :-
+game_over_diag(2) :-
     get_white_pieces(Pieces),
-    are_consecutive_diag(Pieces),
-    Winner=2.
+    are_consecutive_diag(Pieces).
 
 /**
  * Checks if a player has three consecutive pieces in a same column, thus winning the game.
  */
-game_over_col(Winner) :-
+game_over_col(1) :-
     get_black_pieces(Pieces),
-    are_consecutive_ver(Pieces),
-    Winner=1.
+    are_consecutive_ver(Pieces).
 
-game_over_col(Winner) :-
+game_over_col(2) :-
     get_white_pieces(Pieces),
-    are_consecutive_ver(Pieces),
-    Winner=1.
+    are_consecutive_ver(Pieces).
 
 /**
  * Checks if three given numbers are consecutive.
@@ -333,10 +317,7 @@ are_numbers_consecutive(N1, N2, N3) :-
 /**
  * Checks if three given pieces are consecutive in a board line.
  */ 
-are_consecutive_hor(Pieces) :-
-    nth0(0, Pieces, [F1|F2]),
-    nth0(1, Pieces, [S1|S2]),
-    nth0(2, Pieces, [T1|T2]),
+are_consecutive_hor([[F1|F2], [S1|S2], [T1, T2]]) :-
     F1=S1,
     S1=T1,
     are_numbers_consecutive(F2, S2, T2).
@@ -344,10 +325,7 @@ are_consecutive_hor(Pieces) :-
 /**
  * Checks if three given pieces are consecutive in a board column.
  */
-are_consecutive_ver(Pieces) :-
-    nth0(0, Pieces, [F1|F2]),
-    nth0(1, Pieces, [S1|S2]),
-    nth0(2, Pieces, [T1|T2]),
+are_consecutive_ver([[F1|F2], [S1|S2], [T1, T2]]) :-
     F2=S2,
     S2=T2,
     are_numbers_consecutive(F1, S1, T1).
@@ -355,24 +333,15 @@ are_consecutive_ver(Pieces) :-
 /**
  * Checks if three given pieces are consecutive in a board diagonal.
  */
-are_consecutive_diag(Pieces) :-
-    nth0(0, Pieces, [F1|F2]),
-    nth0(1, Pieces, [S1|S2]),
-    nth0(2, Pieces, [T1|T2]),
+are_consecutive_diag([[F1|F2], [S1|S2], [T1, T2]]) :-
     are_numbers_consecutive(F1, S1, T1),
     are_numbers_consecutive(F2, S2, T2).
 
+is_empty(empty).
 
-is_empty(Piece) :-
-    Piece=empty.
+is_black(1, black).
 
-is_black(Player, Piece) :-
-    Player=1,
-    Piece=black.
-
-is_white(Player, Piece) :-
-    Player=2,
-    Piece=white.
+is_white(2, white).
 
 % Gets a player move, not allowing absurd options
 choose_player_move(ListOfMoves,Move):- 

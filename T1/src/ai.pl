@@ -38,7 +38,7 @@ update_piece_ai_aux(Player, [Piece | Rest], NLine, NCol):-
 alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth) :-
     moves(Pos, PosList),!,
     boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth);
-    staticval(Pos, Val).
+    value(Pos, Val).
 
 % pos [JOGADOR, ESTADO (win/draw/play), TABULEIRO]
 % gerar lista com todas as posicoes validas a partir de pos (verificar final de jogo, e nesse caso dar fail)
@@ -76,17 +76,85 @@ move_aux(P, [B|Bs], [B|B2s]) :-
 % winPos(+Player, +Board)
 % True if Player win in Board.
 winPos(P, Board) :-
-    game_over(Board, P).
+    game_over_ai(Board, P).
 
+game_over_ai(Board, Winner):-
+    game_over_ai_row(Board, Winner).
+
+game_over_ai(Board, Winner):-
+    game_over_ai_col(Board, Winner).
+
+game_over_ai(Board, Winner):-
+    game_over_ai_diag(Board, Winner).
+
+game_over_ai(Board, Winner):-
+    game_over_ai_draw(Board, Winner).
+
+game_over_ai_row(Board, 1):-
+    get_black_pieces(Board, Pieces),
+    areConsecutiveHor(Pieces).
+
+game_over_ai_row(Board, 2):-
+    get_white_pieces(Board, 2, Pieces),
+    areConsecutiveVer(Pieces).
+
+game_over_ai_col(Board, 1):-
+    get_black_pieces(Board, Pieces),
+    areConsecutiveVer(Pieces).
+
+game_over_ai_col(Board, 2):-
+    get_white_pieces(Board, 2, Pieces),
+    areConsecutiveVer(Pieces).
+
+game_over_ai_diag(Board, 1):-
+    get_black_pieces(Board, Pieces),
+    areConsecutiveDiag(Pieces).
+
+game_over_ai_diag(Board, 2):-
+    get_white_pieces(Board, 2, Pieces),
+    areConsecutiveDiag(Pieces).
+
+game_over_ai_draw(Board, -1):-
+    countOcorrences(CountOcorrences),
+    boards(Boards),
+    member(Board, Boards),
+    nth0(Index, Boards, Board),
+    nth0(Index, CountOcorrences, 2).
+
+game_over_ai_draw(_Board, 0).
+
+% get_white_pieces_line(Board, Pieces, NLine).
+
+% get_white_pieces(Board, Pieces):-
+%     get_white_pieces_line(Board, Pieces, NLine).
+
+
+    
 % drawPos(+Player, +Board)
 % True if the game is a draw.
 drawPos(_,Board) :-
-    game_over(Board, P),
-    P=-1.
+    game_over(Board, -1).
 
-staticval([1,win,_], 1).
-staticval([,_,_], 0).
-staticval([2,win,_], -1).
+value([1,win,_], 100).
+value([_,draw,_], 0).
+value([2,win,_], -100).
+
+% Player 1 has advantage (2 consecutive pieces)
+value([1, play, Board], 10):-
+    get_black_pieces(Board, [[F1|F2], [S1|S2], [T1|T2]]),
+    areConsecutive([[F1|F2], [S1|S2]]);
+    areConsecutive([[F1|F2], [T1|T2]]);
+    areConsecutive([[S1|S2], [T1|T2]]).
+
+% Player 2 has advantage (2 consecutive pieces)
+value([2, play, Board], -10):-
+    get_white_pieces(Board, [[F1|F2], [S1|S2], [T1|T2]]),
+    areConsecutive([[F1|F2], [S1|S2]]);
+    areConsecutive([[F1|F2], [T1|T2]]);
+    areConsecutive([[S1|S2], [T1|T2]]).
+
+% No player has advantage
+value([_, play, _Board], 0).
 
 min_to_move([1,_, _]).
 
