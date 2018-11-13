@@ -141,17 +141,17 @@ value([2,win,_], -100).
 
 % Player 1 has advantage (2 consecutive pieces)
 value([1, play, Board], 10):-
-    get_black_pieces(Board, [[F1|F2], [S1|S2], [T1|T2]]),
-    areConsecutive([[F1|F2], [S1|S2]]);
-    areConsecutive([[F1|F2], [T1|T2]]);
-    areConsecutive([[S1|S2], [T1|T2]]).
+    get_black_pieces(Board, [[F1,F2], [S1,S2], [T1,T2]]),
+    areConsecutive([[F1,F2], [S1,S2]]);
+    areConsecutive([[F1,F2], [T1,T2]]);
+    areConsecutive([[S1,S2], [T1,T2]]).
 
 % Player 2 has advantage (2 consecutive pieces)
 value([2, play, Board], -10):-
-    get_white_pieces(Board, [[F1|F2], [S1|S2], [T1|T2]]),
-    areConsecutive([[F1|F2], [S1|S2]]);
-    areConsecutive([[F1|F2], [T1|T2]]);
-    areConsecutive([[S1|S2], [T1|T2]]).
+    get_white_pieces(Board, [[F1,F2], [S1,S2], [T1,T2]]),
+    areConsecutive([[F1,F2], [S1,S2]]);
+    areConsecutive([[F1,F2], [T1,T2]]);
+    areConsecutive([[S1,S2], [T1,T2]]).
 
 % No player has advantage
 value([_, play, _Board], 0).
