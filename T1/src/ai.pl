@@ -128,7 +128,26 @@ game_over_ai_draw(_Board, 0).
 % get_white_pieces(Board, Pieces):-
 %     get_white_pieces_line(Board, Pieces, NLine).
 
+are_consecutive_ai(Pieces):-
+    are_consecutive_ai_hor(Pieces).
 
+are_consecutive_ai(Pieces):-
+    are_consecutive_ai_ver(Pieces).
+
+are_consecutive_ai(Pieces):-
+    are_consecutive_ai_diag(Pieces).
+
+are_consecutive_ai_hor([[F1,F2], [S1,S2]]):-
+    F1 = S1,
+    are_consecutive_numbers([F2, S2]).
+
+are_consecutive_ai_ver([[F1,F2], [S1,S2]]):-
+    F2 = S2,
+    are_consecutive_numbers([F1, S1]).
+
+are_consecutive_ai_diag([[F1,F2], [S1,S2]]):-
+    are_consecutive_numbers([F1, S1]),
+    are_consecutive_numbers([F2, S2]).
     
 % drawPos(+Player, +Board)
 % True if the game is a draw.
@@ -142,16 +161,16 @@ value([2,win,_], -100).
 % Player 1 has advantage (2 consecutive pieces)
 value([1, play, Board], 10):-
     get_black_pieces(Board, [[F1,F2], [S1,S2], [T1,T2]]),
-    areConsecutive([[F1,F2], [S1,S2]]);
-    areConsecutive([[F1,F2], [T1,T2]]);
-    areConsecutive([[S1,S2], [T1,T2]]).
+    are_consecutive_ai([[F1,F2], [S1,S2]]);
+    are_consecutive_ai([[F1,F2], [T1,T2]]);
+    are_consecutive_ai([[S1,S2], [T1,T2]]).
 
 % Player 2 has advantage (2 consecutive pieces)
 value([2, play, Board], -10):-
     get_white_pieces(Board, [[F1,F2], [S1,S2], [T1,T2]]),
-    areConsecutive([[F1,F2], [S1,S2]]);
-    areConsecutive([[F1,F2], [T1,T2]]);
-    areConsecutive([[S1,S2], [T1,T2]]).
+    are_consecutive_ai([[F1,F2], [S1,S2]]);
+    are_consecutive_ai([[F1,F2], [T1,T2]]);
+    are_consecutive_ai([[S1,S2], [T1,T2]]).
 
 % No player has advantage
 value([_, play, _Board], 0).
