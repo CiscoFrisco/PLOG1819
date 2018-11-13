@@ -96,7 +96,7 @@ game_over_ai_row(Board, 1):-
 
 game_over_ai_row(Board, 2):-
     get_white_pieces(Board, 2, Pieces),
-    areConsecutiveVer(Pieces).
+    areConsecutiveHor(Pieces).
 
 game_over_ai_col(Board, 1):-
     get_black_pieces(Board, Pieces),

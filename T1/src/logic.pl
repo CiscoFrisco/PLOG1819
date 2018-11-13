@@ -304,38 +304,27 @@ game_over_col(2) :-
     are_consecutive_ver(Pieces).
 
 /**
- * Checks if three given numbers are consecutive.
- */ 
-are_numbers_consecutive(N1, N2, N3) :-
-    Min1 is min(N2, N3),
-    Min2 is min(N1, Min1),
-    Max1 is max(N2, N3),
-    Max2 is max(N1, Max1),
-    Res is Max2-Min2,
-    Res=2.
-
-/**
  * Checks if three given pieces are consecutive in a board line.
  */ 
-are_consecutive_hor([[F1|F2], [S1|S2], [T1, T2]]) :-
+are_consecutive_hor([[F1,F2], [S1,S2], [T1, T2]]) :-
     F1=S1,
     S1=T1,
-    are_numbers_consecutive(F2, S2, T2).
+    are_numbers_consecutive([F2, S2, T2]).
 
 /**
  * Checks if three given pieces are consecutive in a board column.
  */
-are_consecutive_ver([[F1|F2], [S1|S2], [T1, T2]]) :-
+are_consecutive_ver([[F1,F2], [S1,S2], [T1, T2]]) :-
     F2=S2,
     S2=T2,
-    are_numbers_consecutive(F1, S1, T1).
+    are_numbers_consecutive([F1, S1, T1]).
 
 /**
  * Checks if three given pieces are consecutive in a board diagonal.
  */
-are_consecutive_diag([[F1|F2], [S1|S2], [T1, T2]]) :-
-    are_numbers_consecutive(F1, S1, T1),
-    are_numbers_consecutive(F2, S2, T2).
+are_consecutive_diag([[F1,F2], [S1,S2], [T1, T2]]) :-
+    are_numbers_consecutive([F1, S1, T1]),
+    are_numbers_consecutive([F2, S2, T2]).
 
 is_empty(empty).
 
