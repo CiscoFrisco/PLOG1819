@@ -12,6 +12,7 @@
  * the given option.
  */  
 play :-
+    clearConsole,
     print_main_menu,
     write('Choose an option '),
     read(Option),

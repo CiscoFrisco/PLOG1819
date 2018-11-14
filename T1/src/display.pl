@@ -5,6 +5,9 @@ symbol(empty, '   ').
 symbol(black, ' o ').
 symbol(white, ' x ').
 
+clearConsole:-
+    write('\33\[2J').
+
 /**
  * Displays the current board on the screen, and indicates 
  * which player has the current turn.
@@ -49,17 +52,10 @@ display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
     write(' -> '),
     write(DestLine), get_char_index(DestCol,DestChar),write(DestChar),nl.
 
-display_valid_moves_piece([], Counter,Counter).
-
-% Displays valid moves for a piece
-display_valid_moves_piece([Head | Tail],Counter, FinalCounter):- 
-    display_valid_move(Head, Counter),
-    NewCounter is Counter + 1,
-    display_valid_moves_piece(Tail,NewCounter, FinalCounter).
-
 % Display valid moves for the player
 display_valid_moves([], _Counter).
 
 display_valid_moves([Head | Tail],Counter):-
-    display_valid_moves_piece(Head,Counter,NextCounter),
+    display_valid_move(Head, Counter),
+    NextCounter is Counter + 1,
     display_valid_moves(Tail, NextCounter).

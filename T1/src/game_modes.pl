@@ -3,21 +3,22 @@ pvp :-
     pvp_play,
     board(Board),
     game_over(Winner),
-    (
+    ( clearConsole,
         (
             Winner = 1,
-            write('\nPlayer 1 won\n'),
-            show_board(Board, 1)
+            show_board(Board, 1),
+            write('\nPlayer 1 won\n')
         )
     ;   ( 
             Winner = 2,
-            write('\nPlayer 2 won\n'),
-            show_board(Board, 1)
+            show_board(Board, 1),
+            write('\nPlayer 2 won\n')
+            
         )
     ;   (
             Winner = -1,
-            write('\nThere was a draw!\n'),
-            show_board(Board, 1)
+            show_board(Board, 1),
+            write('\nThere was a draw!\n') 
         )
     ;   pvp
     ). 
@@ -49,8 +50,8 @@ pvb :-
     pvb_play,
     board(Board),
     game_over(Winner),
-    (
-        (   Winner = 1,
+    ( clearConsole,
+        (Winner = 1,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)
         )
@@ -102,7 +103,8 @@ bvb :-
     bvb_play,
     board(Board),
     game_over(Winner),
-    (   
+    (       
+        clearConsole,
         (Winner = 1,
         write('\nPlayer 1 won\n'),
         show_board(Board, 1)

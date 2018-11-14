@@ -4,7 +4,7 @@ nextPlayer(1).
 
 % AI difficulty (EASY / MEDIUM / HARD), reflecting on minimax depth
 :- (dynamic difficulty/1).
-difficulty(2).
+difficulty(1).
 
 % Variables that hold each piece position on the board (i, j)
 :- (dynamic p1_1/2).
@@ -22,7 +22,6 @@ p2_1(1, 2).
 p2_2(1, 4).
 p2_3(4, 3).
 
-
 % Variables to support checking for a draw
 :- (dynamic boards/1).
 :- (dynamic countOcorrences/1).
@@ -34,7 +33,7 @@ countOcorrences([]).
 board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]]).
 
 % Resets main variables to initial state, to support consecutive games
-resetData :-
+reset_data :-
     board(Board),
     retract(board(Board)),
     assert(board(
@@ -71,6 +70,16 @@ resetData :-
     p2_3(K, L),
     retract(p2_3(K, L)),
     assert(p2_3(4, 3)).
+
+update_pieces(1, [[I1, J1], [I2, J2], [I3, J3]]):-
+    p1_1(A,B), retract(p1_1(A,B)), assert(p1_1(I1, J1)),
+    p1_2(C,D), retract(p1_2(C,D)), assert(p1_2(I2, J2)),
+    p1_3(E,F), retract(p1_3(E,F)), assert(p1_3(I3, J3)).
+
+update_pieces(2, [[I1, J1], [I2, J2], [I3, J3]]):-
+    p2_1(A,B), retract(p2_1(A,B)), assert(p2_1(I1, J1)),
+    p2_2(C,D), retract(p2_2(C,D)), assert(p2_2(I2, J2)),
+    p2_3(E,F), retract(p2_3(E,F)), assert(p2_3(I3, J3)).
 
 % Updates a piece variable
 update_piece(InitLine,InitCol,DestLine,DestCol,1):-
@@ -126,11 +135,11 @@ valid_moves_piece(_Board,[],ListOfMoves,ListOfMoves).
 valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
     Init = Head,
     Curr = Head,
-    valid_horizontal(Board, Curr, Init, [], HorMoves, -1),
+    valid_horizontal(Board, Curr, Init, List, HorMoves, -1),
     valid_vertical(Board, Curr, Init, HorMoves, HorVertMoves, -1),
     valid_diagonal(Board, Curr, Init, HorVertMoves, AllMoves, -1, -1),
     discard_duplicate_moves(AllMoves, [], NewAllMoves),
-    valid_moves_piece(Board,Tail, [NewAllMoves | List], ListOfMoves).
+    valid_moves_piece(Board, Tail, NewAllMoves, ListOfMoves).
 
 get_piece(LineN,ColN,Board,Piece):-
     nth1(LineN,Board,Line),
@@ -173,14 +182,16 @@ valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
                 Move = [InitLine, InitCol,Line,Col],
                 NextInc is Inc + 2, 
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
+                append(List,[Move],NewList),
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , NewList , Moves, NextInc)
               );
     get_piece(Line,NextCol,Board,Piece),
     /*else if*/((Piece = black ; Piece = white), 
                 Move = [InitLine, InitCol,Line,Col], 
                 NextInc is Inc + 2,
                 Next_Col is InitCol,
-                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
+                append(List,[Move],NewList),
+                valid_horizontal(Board, [Line,Next_Col] , [InitLine,InitCol] , NewList , Moves, NextInc)
                );
     /*else*/(valid_horizontal(Board, [Line,NextCol], [InitLine,InitCol] , List, Moves , Inc))
     ).    
@@ -195,14 +206,16 @@ valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
                 Move = [InitLine, InitCol,Line,Col],
                 NextInc is Inc + 2, 
                 Next_Line is InitLine,
-                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | List] , Moves, NextInc)
+                append(List,[Move],NewList),
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , NewList , Moves, NextInc)
               );
     get_piece(NextLine,Col,Board,Piece),
     /*else if*/((Piece = black ; Piece = white),
                 Move = [InitLine, InitCol,Line,Col], 
                 NextInc is Inc + 2, 
                 Next_Line is InitLine,
-                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , [Move | List], Moves , NextInc)
+                append(List,[Move],NewList),
+                valid_vertical(Board, [Next_Line,Col] , [InitLine,InitCol] , NewList, Moves , NextInc)
                );
     /*else*/(valid_vertical(Board, [NextLine,Col], [InitLine,InitCol] , List, Moves , Inc))
     ).
@@ -224,7 +237,8 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,Co
                 ),
                 Next_Line is InitLine,
                 Next_Col is InitCol,
-                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | List] , Moves, NextLineInc, NextColInc)
+                append(List,[Move],NewList),
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , NewList , Moves, NextLineInc, NextColInc)
               );
     get_piece(NextLine,NextCol,Board,Piece),
     /*else if*/((Piece = black ; Piece = white),
@@ -237,7 +251,8 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,Co
                 ),
                 Next_Line is InitLine,
                 Next_Col is InitCol,
-                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , [Move | List] ,Moves, NextLineInc, NextColInc)
+                append(List,[Move],NewList),
+                valid_diagonal(Board, [Next_Line,Next_Col] , [InitLine,InitCol] , NewList ,Moves, NextLineInc, NextColInc)
                );
     /*else*/(valid_diagonal(Board, [NextLine,NextCol], [InitLine,InitCol] , List, Moves , LineInc,ColInc))
     ).
@@ -336,19 +351,7 @@ is_white(2, white).
 choose_player_move(ListOfMoves,Move):- 
     write('\nMove?'),
     read(Option),
-    (get_move(Option,ListOfMoves, Move) -> true ; write('Please choose a valid option.\n'), choose_player_move(ListOfMoves,Move)).
-
-get_move_piece(1, [Head | _Tail], _Pieces, Head).
-
-get_move_piece(Option,[],[_Piece | Rest], Move):-
-    get_move(Option, Rest , Move).
-    
-get_move_piece(Option,[_Head | Tail], [Piece | Rest], Move):-
-    NextOption is Option - 1,
-    get_move_piece(NextOption, Tail, [Piece | Rest] , Move).
-
-get_move(Option, [Head | Tail], Move):-
-    get_move_piece(Option, Head, [Head | Tail], Move).
+    (nth1(Option, ListOfMoves, Move) -> true ; write('Please choose a valid option.\n'), choose_player_move(ListOfMoves,Move)).
 
 /*
     Updates draw related variables, at the end of each game turn. If the current board is new,

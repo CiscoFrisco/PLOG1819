@@ -17,10 +17,16 @@ not(_X).
 % Sets a variable to another value.
 set(X, X).
 
+duplicate(List):-
+    append(X,Y,List),
+    member(M,X),
+    member(M,Y). 
+
 /**
  * True if any given numbers in a list are consecutive.
  */ 
 are_numbers_consecutive(Numbers) :-
+    not(duplicate(Numbers)),
     max_member(Max, Numbers),
     min_member(Min, Numbers),
     Res is Max - Min,
