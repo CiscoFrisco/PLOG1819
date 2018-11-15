@@ -6,13 +6,13 @@
 :- consult('menus.pl').
 
 :- use_module(library(lists)).
+:- use_module(library(system)).
 
 /**
  * Entry point for the game. Prints the main menu, reads user's choice and redirects to
  * the given option.
  */  
 play :-
-    clearConsole,
     print_main_menu,
     write('Choose an option '),
     read(Option),

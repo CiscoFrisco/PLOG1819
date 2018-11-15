@@ -12,9 +12,9 @@ choose_option(1) :-
  */
 choose_option(2):-
     clearConsole,
-     pvb,
-     reset_data,
-     play.
+    pvb,
+    reset_data,
+    play.
 
 /**
  * Start Computer vs Computer gamemode and redirect to main menu when it's over.
@@ -47,6 +47,9 @@ choose_option(5) :-
 choose_option(0) :-
     write('\nExiting game.\n').
 
+choose_option(_):-
+    play.
+
 /**
  * Displays the game rules on the screen.
  */
@@ -68,7 +71,7 @@ choose_difficulty:-
     write('3. Hard\n'),
     write('Choose option '),
     read(Option),
-    (Option > 0, Option < 4) -> (retract(difficulty(Difficulty)), assert(difficulty(Option))) ; choose_difficulty.
+    if_then_else((number(Option), Option > 0, Option < 4), (retract(difficulty(Difficulty)), assert(difficulty(Option))), choose_difficulty).
 
 /**
  * Prints the main menu on the screen.

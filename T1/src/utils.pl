@@ -32,3 +32,7 @@ are_numbers_consecutive(Numbers) :-
     Res is Max - Min,
     length(Numbers, Length),
     Res =:= Length - 1.
+
+% If then else
+if_then_else(Condition, Goal, _Else) :- Condition, !, Goal.
+if_then_else(_Condition, _Goal, Else) :- Else.

@@ -24,9 +24,9 @@ p2_3(4, 3).
 
 % Variables to support checking for a draw
 :- (dynamic boards/1).
-:- (dynamic countOcorrences/1).
+:- (dynamic countOccurrences/1).
 boards([]).
-countOcorrences([]).
+countOccurrences([]).
 
 % The game's board, represented by a list of lists
 :- (dynamic board/1).
@@ -46,9 +46,9 @@ reset_data :-
     boards(Boards),
     retract(boards(Boards)),
     assert(boards([])),
-    countOcorrences(CountOcorrences),
-    retract(countOcorrences(CountOcorrences)),
-    assert(countOcorrences([])),
+    countOccurrences(CountOccurrences),
+    retract(countOccurrences(CountOccurrences)),
+    assert(countOccurrences([])),
     nextPlayer(Player),
     retract(nextPlayer(Player)),
     assert(nextPlayer(1)),
@@ -71,21 +71,11 @@ reset_data :-
     retract(p2_3(K, L)),
     assert(p2_3(4, 3)).
 
-update_pieces(1, [[I1, J1], [I2, J2], [I3, J3]]):-
-    p1_1(A,B), retract(p1_1(A,B)), assert(p1_1(I1, J1)),
-    p1_2(C,D), retract(p1_2(C,D)), assert(p1_2(I2, J2)),
-    p1_3(E,F), retract(p1_3(E,F)), assert(p1_3(I3, J3)).
-
-update_pieces(2, [[I1, J1], [I2, J2], [I3, J3]]):-
-    p2_1(A,B), retract(p2_1(A,B)), assert(p2_1(I1, J1)),
-    p2_2(C,D), retract(p2_2(C,D)), assert(p2_2(I2, J2)),
-    p2_3(E,F), retract(p2_3(E,F)), assert(p2_3(I3, J3)).
-
 % Updates a piece variable
 update_piece(InitLine,InitCol,DestLine,DestCol,1):-
-            (p1_1(A,B), A = InitLine,B = InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
-            (p1_2(A,B), A = InitLine,B = InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
-            (p1_3(A,B), A = InitLine,B = InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol))).
+    (p1_1(A,B), A = InitLine,B = InitCol, retract(p1_1(A,B)), assert(p1_1(DestLine,DestCol)));
+    (p1_2(A,B), A = InitLine,B = InitCol, retract(p1_2(A,B)), assert(p1_2(DestLine,DestCol)));
+    (p1_3(A,B), A = InitLine,B = InitCol, retract(p1_3(A,B)), assert(p1_3(DestLine,DestCol))).
 
 update_piece(InitLine,InitCol,DestLine,DestCol,2):-
     (p2_1(A,B), A = InitLine,B = InitCol, retract(p2_1(A,B)), assert(p2_1(DestLine,DestCol)));
@@ -109,10 +99,7 @@ set_piece(N, NCol, [Elem |Rest1], [Elem|Out], Piece):-
  */
 move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     nextPlayer(Player),
-    (   Player=1
-    ->  set(black, Piece)
-    ;   set(white, Piece)
-    ),
+    if_then_else(Player = 1, set(black, Piece), set(white, Piece)),
     set_piece(InitLine, InitCol, Board, TempBoard, empty),
     set_piece(DestLine, DestCol, TempBoard, NewBoard, Piece),
     update_piece(InitLine,InitCol,DestLine,DestCol, Player).
@@ -281,7 +268,7 @@ game_over(Winner):-
  in which case a draw occurs.
  */
 game_over_draw(-1):-
-    countOcorrences(Count),
+    countOccurrences(Count),
     member(3, Count).
 
 game_over_draw(0).
@@ -351,29 +338,29 @@ is_white(2, white).
 choose_player_move(ListOfMoves,Move):- 
     write('\nMove?'),
     read(Option),
-    (nth1(Option, ListOfMoves, Move) -> true ; write('Please choose a valid option.\n'), choose_player_move(ListOfMoves,Move)).
+    if_then_else((number(Option), nth1(Option, ListOfMoves, Move)), true, (write('Please choose a valid option.\n'), choose_player_move(ListOfMoves,Move))).
 
 /*
     Updates draw related variables, at the end of each game turn. If the current board is new,
     then it is appended to the board's list and a new element is added to the count list (1).
     Else, the boards lists remains unaltered and the corresponding count is incremented.
 */
+
+handle_draw_inc(NewBoard, Boards, CountOcurrences):-
+    nth0(Index, Boards, NewBoard),
+    nth0(Index, CountOcurrences, Count),
+    NewCount is Count+1,
+    replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
+    retract(countOccurrences(CountOcurrences)),
+    assert(countOccurrences(NewCountOcurrences)).
+
+handle_draw_add(NewBoard, Boards, CountOcurrences):-
+    append(Boards, [NewBoard], TempNewBoards),
+    append(CountOcurrences, [1], TempNewCount),
+    retract(boards(Boards)),
+    retract(countOccurrences(CountOcurrences)),
+    assert(boards(TempNewBoards)),
+    assert(countOccurrences(TempNewCount)).
+
 handle_draw(NewBoard, Boards, CountOcurrences) :-
-    (member(NewBoard, Boards),
-        (
-            nth0(Index, Boards, NewBoard),
-            nth0(Index, CountOcurrences, Count),
-            NewCount is Count+1,
-            replace(CountOcurrences, Index, NewCount, NewCountOcurrences),
-            retract(countOcorrences(CountOcurrences)),
-            assert(countOcorrences(NewCountOcurrences))
-        )
-    );   
-    (
-        append(Boards, [NewBoard], TempNewBoards),
-        append(CountOcurrences, [1], TempNewCount),
-        retract(boards(Boards)),
-        retract(countOcorrences(CountOcurrences)),
-        assert(boards(TempNewBoards)),
-        assert(countOcorrences(TempNewCount))
-    ).
+    if_then_else(member(NewBoard, Boards), handle_draw_inc(NewBoard, Boards, CountOcurrences), handle_draw_add(NewBoard, Boards, CountOcurrences)).

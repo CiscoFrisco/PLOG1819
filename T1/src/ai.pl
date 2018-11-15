@@ -8,6 +8,16 @@ update_pieces_ai(Player, Board):-
     get_pieces(Board, Piece, Pieces),
     update_pieces(Player, Pieces).
 
+update_pieces(1, [[I1, J1], [I2, J2], [I3, J3]]):-
+    p1_1(A,B), retract(p1_1(A,B)), assert(p1_1(I1, J1)),
+    p1_2(C,D), retract(p1_2(C,D)), assert(p1_2(I2, J2)),
+    p1_3(E,F), retract(p1_3(E,F)), assert(p1_3(I3, J3)).
+
+update_pieces(2, [[I1, J1], [I2, J2], [I3, J3]]):-
+    p2_1(A,B), retract(p2_1(A,B)), assert(p2_1(I1, J1)),
+    p2_2(C,D), retract(p2_2(C,D)), assert(p2_2(I2, J2)),
+    p2_3(E,F), retract(p2_3(E,F)), assert(p2_3(I3, J3)).
+
 % nextPlayer(X1, X2)
 % True if X2 is the next player to play after X1.
 nextPlayer(1, 2).
@@ -50,11 +60,11 @@ game_over_ai_diag(Board, 2):-
     are_consecutive_diag(Pieces).
 
 game_over_ai_draw(Board, -1):-
-    countOcorrences(CountOcorrences),
+    countOccurrences(CountOccurrences),
     boards(Boards),
     member(Board, Boards),
     nth0(Index, Boards, Board),
-    nth0(Index, CountOcorrences, 2).
+    nth0(Index, CountOccurrences, 2).
 
 game_over_ai_draw(_Board, 0).
 
@@ -81,18 +91,18 @@ are_consecutive_ai_diag([[F1,F2], [S1,S2]]):-
     
 % get_pieces_line(Line, NLine, NCol, Type (black/white), Pieces, NewPieces)
 
-get_pieces_line([], NLine, NCol, Type, NewPieces, NewPieces).
+get_pieces_line([], _NLine, _NCol, _Type, NewPieces, NewPieces).
 
 get_pieces_line([Head | Rest], NLine, NCol, Head, Pieces, NewPieces):-
     append(Pieces, [[NLine, NCol]], TempPieces),
     NewNCol is NCol + 1,
     get_pieces_line(Rest, NLine,NewNCol, Head,TempPieces, NewPieces).
 
-get_pieces_line([Head | Rest], NLine, NCol, Type, Pieces, NewPieces):-
+get_pieces_line([_Head | Rest], NLine, NCol, Type, Pieces, NewPieces):-
     NewNCol is NCol + 1,
     get_pieces_line(Rest, NLine,NewNCol, Type, Pieces, NewPieces).
 
-get_pieces_aux([], NLine, NCol, Type, NewPieces, NewPieces).
+get_pieces_aux([], _NLine, _NCol, _Type, NewPieces, NewPieces).
 
 get_pieces_aux([Head | Rest], NLine, NCol, Type, Pieces, NewPieces):-
     get_pieces_line(Head, NLine, NCol, Type, Pieces, TempPieces),
@@ -133,13 +143,13 @@ player_piece(2, white).
 
 % pos [JOGADOR, ESTADO (win/draw/play), TABULEIRO]
 % gerar lista com todas as posicoes validas a partir de pos (verificar final de jogo, e nesse caso dar fail)
-moves([Player, State, Board], PosList):-
+moves([Player, _State, Board], PosList):-
     player_piece(Player,Type),
     get_pieces(Board, Type, Pieces),
     valid_moves_piece(Board, Pieces,[],Moves),
-    generate_pos_list([Player, play, Board], Moves, TempPosList, PosList).
+    generate_pos_list([Player, play, Board], Moves, _TempPosList, PosList).
 
-generate_pos_list([Player, State, Board], [], PosList, PosList).
+generate_pos_list([_Player, _State, _Board], [], PosList, PosList).
 
 generate_pos_list([Player, State, Board], [Head | Tail], TempPosList,PosList):-
     move_ai([Player, State, Board], Head, NewPos),
