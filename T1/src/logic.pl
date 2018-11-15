@@ -4,7 +4,7 @@ nextPlayer(1).
 
 % AI difficulty (EASY / MEDIUM / HARD), reflecting on minimax depth
 :- (dynamic difficulty/1).
-difficulty(1).
+difficulty(2).
 
 % Variables that hold each piece position on the board (i, j)
 :- (dynamic p1_1/2).

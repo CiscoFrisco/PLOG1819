@@ -1,8 +1,17 @@
-choose_move(Board, Level, NextBoard):-
+choose_move(Board, 2, NextBoard):-
     nextPlayer(Player),
-     alphabeta([Player,play,Board], -10000, 10000, [_, _, NextBoard], _, Level),
+     alphabeta([Player,play,Board], -10000, 10000, [_, _, NextBoard], _, 1),
      update_pieces_ai(Player, NextBoard).
 
+choose_move(Board, 1, NextBoard):-
+    nextPlayer(Player),
+    moves([Player, play, Board], PosList),
+    length(PosList, Length),
+    random(0,Length,Random),
+    write(Random), nl,
+    nth0(Random, PosList, [_, _, NextBoard]),
+    update_pieces_ai(Player, NextBoard).
+    
 update_pieces_ai(Player, Board):-
     player_piece(Player, Piece),
     get_pieces(Board, Piece, Pieces),
