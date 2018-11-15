@@ -28,7 +28,7 @@ pvp_play :-
 pvb :-
     pvb_play,
     game_over(Winner),
-    clearConsole,
+    %clearConsole,
     board(Board),
     handle_winner(Board, Winner, 2). 
 
@@ -78,7 +78,10 @@ handle_winner(Board, 1, _):-
 
 handle_winner(Board, 2, _):-
     show_board(Board, 1),
-    write('\n\nPlayer 2 won\n').
+    write('\n\nPlayer 2 won\n'),
+    p2_1(P1,P2),write(P1), write('-'),write(P2), nl,
+    p2_2(P3,P4),write(P3), write('-'),write(P4),nl,
+    p2_3(P5,P6),write(P5), write('-'),write(P6),nl.
 
 handle_winner(Board, -1, _):-
     show_board(Board, 1),

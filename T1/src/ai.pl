@@ -8,7 +8,6 @@ choose_move(Board, 1, NextBoard):-
     moves([Player, play, Board], PosList),
     length(PosList, Length),
     random(0,Length,Random),
-    write(Random), nl,
     nth0(Random, PosList, [_, _, NextBoard]),
     update_pieces_ai(Player, NextBoard).
     
@@ -127,18 +126,20 @@ value([_,draw,_], 0).
 value([2,win,_], -100).
 
 % Player 1 has advantage (2 consecutive pieces)
-value([_, play, Board], 10):-
+value([2, play, Board], -10):-
+    write('entrei\n'),
     get_pieces(Board, black, [[F1,F2], [S1,S2], [T1,T2]]),
     are_consecutive_ai([[F1,F2], [S1,S2]]);
     are_consecutive_ai([[F1,F2], [T1,T2]]);
-    are_consecutive_ai([[S1,S2], [T1,T2]]), not(value([_, play, Board], -10)).
+    are_consecutive_ai([[S1,S2], [T1,T2]]), write('YEET\n'),not(value([1, play, Board], 10)).
 
 % Player 2 has advantage (2 consecutive pieces)
-value([_, play, Board], -10):-
+value([1, play, Board], 10):-
+    write('entrei1\n'),
     get_pieces(Board, white, [[F1,F2], [S1,S2], [T1,T2]]),
     are_consecutive_ai([[F1,F2], [S1,S2]]);
     are_consecutive_ai([[F1,F2], [T1,T2]]);
-    are_consecutive_ai([[S1,S2], [T1,T2]]), not(value([_, play, Board], 10)).
+    are_consecutive_ai([[S1,S2], [T1,T2]]), not(value([2, play, Board], -10)).
 
 % No player has advantage
 value([_, play, _Board], 0).
@@ -178,7 +179,7 @@ move_ai([Player, play, Board], Move, [NextPlayer, draw, NewBoard]):-
     move_ai_aux(Move, Board, NewBoard,Player),
     game_over_ai(NewBoard, -1), !.
 
-% Game ends in draw with this move
+% Game continues with this move
 move_ai([Player, play, Board], Move, [NextPlayer, play, NewBoard]):-
     nextPlayer(Player, NextPlayer),
     move_ai_aux(Move, Board, NewBoard, Player).
@@ -193,7 +194,7 @@ alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth) :-
     Depth > 0,
     moves(Pos, PosList),!,
     boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth);
-    value(Pos, Val).
+    value(Pos, Val), write(Val),nl.
 
 boundedbest([Pos | PosList], Alpha, Beta, GoodPos, GoodVal, Depth) :-
     NextDepth is Depth - 1, 

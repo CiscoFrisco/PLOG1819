@@ -15,7 +15,7 @@ clearConsole:-
 display_game(Board, Player) :-
     nl,
     show_board(Board, 1),
-    format('~n~nPlayer ~d is playing.', Player).
+    format('~n~nPlayer ~d is playing.~n', Player).
 
 /**
  * Displays the current board on the screen in a user friendly way, 

@@ -325,8 +325,31 @@ are_consecutive_ver([[F1,F2], [S1,S2], [T1, T2]]) :-
  * Checks if three given pieces are consecutive in a board diagonal.
  */
 are_consecutive_diag([[F1,F2], [S1,S2], [T1, T2]]) :-
-    are_numbers_consecutive([F1, S1, T1]),
-    are_numbers_consecutive([F2, S2, T2]).
+    not(duplicate([[F1,F2], [S1,S2], [T1, T2]])),
+    sort_by_x([[F1,F2], [S1,S2], [T1, T2]],Sorted),
+    nth1(1,Sorted,First),
+    nth1(2,Sorted,Middle),
+    nth1(3,Sorted,Last),
+    check_final_cond(First,Middle,Last).
+
+check_final_cond([X1,MinY],[X2,_MiddleY],[X3,MaxY]):-
+    (MaxY - MinY) =:= 2, 
+    abs(X2 - X1) =:= 1,
+    abs(X3 - X2) =:= 1,
+    abs(X3 - X1) =:= 2.
+
+
+sort_by_x([X|Xs],Ys):-
+    partition(Xs,X,Littles,Bigs),
+    sort_by_x(Littles,Ls),
+    sort_by_x(Bigs,Bs),
+    append(Ls,[X | Bs],Ys).
+
+sort_by_x([],[]).
+
+partition([[XX,XY]|Xs],[YX,YY],[[XX,XY]|Ls],Bs):- XY =< YY, partition(Xs,[YX,YY],Ls,Bs).
+partition([[XX,XY]|Xs],[YX,YY],Ls,[[XX,XY]|Bs]):- XY > YY, partition(Xs,[YX,YY],Ls,Bs).
+partition([],_Y,[],[]).
 
 is_empty(empty).
 
