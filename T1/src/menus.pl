@@ -1,5 +1,8 @@
 /**
- * Start Player vs Player gamemode and redirect to main menu when it's over.
+ * Start Player vs Player gamemode and redirect to main menu when it's over,
+ * resetting the database to allow multiple games in a row.
+ * 
+ * choose_option(+Option)
  */
 choose_option(1) :-
     clearConsole,
@@ -8,7 +11,8 @@ choose_option(1) :-
     play.
 
 /**
- * Start Player vs Computer gamemode and redirect to main menu when it's over.
+ * Start Player vs Computer gamemode and redirect to main menu when it's over,
+ * resetting the database to allow multiple games in a row.
  */
 choose_option(2):-
     clearConsole,
@@ -17,7 +21,8 @@ choose_option(2):-
     play.
 
 /**
- * Start Computer vs Computer gamemode and redirect to main menu when it's over.
+ * Start Computer vs Computer gamemode and redirect to main menu when it's over,
+ * resetting the database to allow multiple games in a row.
  */
 choose_option(3):-
     clearConsole,
@@ -34,7 +39,7 @@ choose_option(4) :-
     play.
 
 /**
- * Print rules and return to main menu.
+ * Print difficulty menu and return to main menu.
  */
 choose_option(5) :-
     clearConsole,
@@ -47,6 +52,9 @@ choose_option(5) :-
 choose_option(0) :-
     write('\nExiting game.\n').
 
+/**
+ * In case of invalid input, ask for another option.
+ */  
 choose_option(_):-
     play.
 
@@ -61,17 +69,17 @@ print_rules :-
     write('Good luck!\n'). 
 
 /**
- * Allows the user to choose bot difficulty.
+ * Allows the user to choose bot difficulty and changes it on the data base.
+ * This difficulty reflects on the pvb and bvb gamemodes.
  */ 
 choose_difficulty:-
     difficulty(Difficulty),
     write('\nBot difficulty\n'),
     write('1. Easy\n'),
-    write('2. Medium\n'),
-    write('3. Hard\n'),
+    write('2. Hard\n'),
     write('Choose option '),
     read(Option),
-    if_then_else((number(Option), Option > 0, Option < 4), (retract(difficulty(Difficulty)), assert(difficulty(Option))), choose_difficulty).
+    if_then_else((integer(Option), Option > 0, Option < 3), (retract(difficulty(Difficulty)), assert(difficulty(Option))), choose_difficulty).
 
 /**
  * Prints the main menu on the screen.
