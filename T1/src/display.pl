@@ -1,5 +1,5 @@
 /**
- * Associates a player with a piece symbol.
+ * Associates a piece with its symbol.
  * 
  * symbol(+Piece, -Symbol)
  */
@@ -57,7 +57,7 @@ display_line([Head | Tail]):-
 display_line([]).
 
 /**
- * Display a valid move for the player
+ * Display a valid move for the player.
  * 
  * display_valid_move(+Move, +Counter)
  */ 
@@ -68,7 +68,7 @@ display_valid_move([InitLine,InitCol,DestLine,DestCol], Counter):-
     write(DestLine), get_char_index(DestCol,DestChar),write(DestChar),nl.
 
 /**
- * Display valid moves for the player
+ * Display valid moves for the player.
  * 
  * display_valid_moves(+ValidMoves, +Counter)
  */ 

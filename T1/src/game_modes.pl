@@ -1,6 +1,6 @@
 
 /**
- * Player vs. Player game mode
+ * Player vs. Player game mode.
  */ 
 pvp :-
     pvp_play,
@@ -30,7 +30,7 @@ pvp_play :-
     handle_draw(NewBoard, Boards, CountOcurrences).
 
 /**
- * Player vs. Bot gamemode
+ * Player vs. Bot gamemode.
  */ 
 pvb :-
     pvb_play,
@@ -39,7 +39,7 @@ pvb :-
     handle_winner(Board, Winner, 2). 
 
 /**
- * Game turn for Player vs. Bot gamemode
+ * Game turn for Player vs. Bot gamemode.
  */ 
 pvb_play :-
     nextPlayer(P),
@@ -55,6 +55,10 @@ pvb_play :-
     handle_draw(NewBoard, Boards, CountOcurrences).
 
 /**
+ * Make a move for the pvb gamemode based on the player.
+ * If 1 (user), then show the valid moves, ask for input, and make the move.
+ * Otherwise, choose_move predicate already returns the next board.
+ * 
  * make_pvb_move(+Player, +Board, -NewBoard)
  */ 
 make_pvb_move(1, Board, NewBoard):-
@@ -68,7 +72,7 @@ make_pvb_move(2, Board, NewBoard):-
     difficulty(Difficulty),
     choose_move(Board, Difficulty, NewBoard).
 
-/**
+/** 
  * set_next_player(+Player)
  */ 
 set_next_player(1):-
@@ -89,6 +93,9 @@ bvb :-
     handle_winner(Board, Winner, 3). 
 
 /**
+ * If the game is over, show the final board along with an appropriate message.
+ * Otherwise, continue.
+ * 
  * handle_winner(+Board, +Winner, +GameMode)
  */ 
 handle_winner(Board, 1, _):-

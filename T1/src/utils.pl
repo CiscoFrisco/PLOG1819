@@ -1,5 +1,5 @@
 /**
- * Replaces and element of a list for another, returning the resulting list
+ * Replaces and element of a list for another, returning the resulting list.
  * 
  * replace(+List, +Index, +NewElement, -NewList)
  */ 
@@ -10,7 +10,8 @@ replace([H|T], I, X, [H|R]):-
     replace(T, I1, X, R).
  
 /**
- * Converts letter to integer index
+ * Converts integer index to letter. Useful to show the valid moves,
+ * since the column index is shown as a letter.
  *
  * get_char_index(+Col, -Char)
  */  

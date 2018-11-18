@@ -2,7 +2,7 @@
 :- (dynamic nextPlayer/1).
 nextPlayer(1).
 
-% AI difficulty (EASY / MEDIUM / HARD), reflecting on minimax depth
+% AI difficulty (EASY / MEDIUM / HARD), reflecting on depth
 :- (dynamic difficulty/1).
 difficulty(2).
 
@@ -33,7 +33,7 @@ countOccurrences([]).
 board([[empty, white, empty, white, empty], [empty, empty, black, empty, empty], [empty, empty, empty, empty, empty], [empty, empty, white, empty, empty], [empty, black, empty, black, empty]]).
 
 /**
- * Resets main variables to initial state, to support consecutive games
+ * Resets main variables to initial state, to support consecutive games.
  */ 
 reset_data :-
     board(Board),
@@ -74,7 +74,7 @@ reset_data :-
     assert(p2_3(4, 3)).
 
 /**
- * Updates a piece variable
+ * Updates a piece variable.
  * 
  * update_piece(+InitLine, +InitCol, +DestLine, +DestCol, +Player)
  */ 
@@ -89,7 +89,7 @@ update_piece(InitLine,InitCol,DestLine,DestCol,2):-
     (p2_3(A,B), A = InitLine,B = InitCol, retract(p2_3(A,B)), assert(p2_3(DestLine,DestCol))).
 
 /**
- * Sets a piece on the board list
+ * Sets a piece on the board list.
  * 
  * set_piece(+NLine, +NCol, +List, -NewList, +Piece)
  */  
@@ -117,14 +117,14 @@ move([InitLine, InitCol, DestLine, DestCol], Board, NewBoard) :-
     update_piece(InitLine,InitCol,DestLine,DestCol, Player).
 
 /**
- * Checks if a move is duplicate, meaning that it's useless in practice since the piece doesn't change places
+ * Checks if a move is duplicate, meaning that it's useless in practice since the piece doesn't change places.
  * 
  * is_duplicate(+Move)
  */  
 is_duplicate([InitLine,InitCol,InitLine,InitCol]).
 
 /**
- * Discards duplicate moves
+ * Discards duplicate moves.
  * 
  * discard_duplicate_moves(+Moves, -TempList, -NewList)
  */  
@@ -135,7 +135,7 @@ discard_duplicate_moves([Head | Tail], TempList, NewList):-
         (discard_duplicate_moves(Tail, [Head | TempList], NewList)).
 
 /**
- * Generates a list of valid moves for each piece of the current player
+ * Generates a list of valid moves for each piece of the current player.
  * 
  * valid_moves_piece(+Board, +Pieces , -TempMoves, -ValidMoves)
  */ 
@@ -151,7 +151,7 @@ valid_moves_piece(Board, [Head|Tail],List, ListOfMoves):-
     valid_moves_piece(Board, Tail, NewAllMoves, ListOfMoves).
 
 /**
- * Gets a piece from the board
+ * Gets a piece from the board.
  * 
  * get_piece(+LineN, +ColN, +Board, -Piece)
  */ 
@@ -193,7 +193,7 @@ get_white_pieces(Pieces):-
     Pieces = [[A,B],[C,D],[E,F]].
 
 /**
- * Generates a list of the valid moves for a piece, in its line
+ * Generates a list of the valid moves for a piece, in its line.
  * 
  * valid_horizontal(+Board, +DestPos, +InitPos, -TempMoves, -ValidMoves, +ColInc)
  */  
@@ -221,7 +221,7 @@ valid_horizontal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
     ).    
 
 /**
- * Generates a list of the valid moves for a piece, in its column
+ * Generates a list of the valid moves for a piece, in its column.
  * 
  * valid_vertical(+Board, +DestPos, +InitPos, -TempMoves, -ValidMoves, +LineInc)
  */  
@@ -249,7 +249,7 @@ valid_vertical(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , Inc):-
     ).
 
 /**
- * Generates a list of the valid moves for a piece, in its diagonal
+ * Generates a list of the valid moves for a piece, in its diagonal.
  * 
  * valid_diagonal(+Board, +DestPos, +InitPos, -TempMoves, -ValidMoves, +LineInc, +ColInc)
  */  
@@ -290,7 +290,7 @@ valid_diagonal(Board, [Line,Col] , [InitLine,InitCol] , List, Moves , LineInc,Co
     ).
 
 /**
- * Generates a list of valid moves for a given player
+ * Generates a list of valid moves for a given player.
  * 
  * valid_moves(+Board, +Player, -ListOfMoves)
  */  
@@ -399,16 +399,20 @@ are_consecutive_diag([[F1,F2], [S1,S2], [T1, T2]]) :-
     check_final_cond(First,Middle,Last).
 
 /**
+ * Check final condition to assure that 3 pieces are consecutive in the same diagonal.
+ * 
  * check_final_cond(+First, +Middle, +Last)
  */ 
-check_final_cond([X1,MinY],[X2,_MiddleY],[X3,MaxY]):-
-    (MaxY - MinY) =:= 2, 
+check_final_cond([X1,MinY],[X2,MiddleY],[X3,MaxY]):-
+    (MaxY - MinY) =:= 2,
+    MiddleY > MinY,
+    MaxY > MiddleY,
     abs(X2 - X1) =:= 1,
     abs(X3 - X2) =:= 1,
     abs(X3 - X1) =:= 2.
 
 /**
- * Gets a player move, not allowing absurd options
+ * Gets a player move, not allowing absurd options.
  * 
  * choose_player_move(+ListOfMoves, -Move)
  */  
@@ -422,6 +426,12 @@ choose_player_move(ListOfMoves,Move):-
  * then it is appended to the board's list and a new element is added to the count list (1).
  * Else, the boards lists remains unaltered and the corresponding count is incremented.
  *
+ * handle_draw(+NewBoard, +Boards, +CountOcurrences) 
+ */
+handle_draw(NewBoard, Boards, CountOcurrences) :-
+    if_then_else(member(NewBoard, Boards), handle_draw_inc(NewBoard, Boards, CountOcurrences), handle_draw_add(NewBoard, Boards, CountOcurrences)).
+
+/**
  * handle_draw_inc(+NewBoard, +Boards, +CountOcurrences) 
  */
 handle_draw_inc(NewBoard, Boards, CountOcurrences):-
@@ -442,9 +452,3 @@ handle_draw_add(NewBoard, Boards, CountOcurrences):-
     retract(countOccurrences(CountOcurrences)),
     assert(boards(TempNewBoards)),
     assert(countOccurrences(TempNewCount)).
-
-/**
- * handle_draw(+NewBoard, +Boards, +CountOcurrences) 
- */
-handle_draw(NewBoard, Boards, CountOcurrences) :-
-    if_then_else(member(NewBoard, Boards), handle_draw_inc(NewBoard, Boards, CountOcurrences), handle_draw_add(NewBoard, Boards, CountOcurrences)).
