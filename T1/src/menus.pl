@@ -74,10 +74,10 @@ print_rules :-
  */ 
 choose_difficulty:-
     difficulty(Difficulty),
-    write('\nBot difficulty\n'),
-    write('1. Easy\n'),
-    write('2. Medium\n'),
-    write('3. Hard\n'),
+    write('\n       Bot difficulty\n\n'),
+    write('           1. Easy\n'),
+    write('           2. Medium\n'),
+    write('           3. Hard\n\n'),
     write('Choose option '),
     read(Option),
     if_then_else((integer(Option), Option > 0, Option < 4), (retract(difficulty(Difficulty)), assert(difficulty(Option + 1))), choose_difficulty).
@@ -86,10 +86,19 @@ choose_difficulty:-
  * Prints the main menu on the screen.
  */ 
 print_main_menu :-
-    write('\nNeutreeko\n'),
-    write('1. Player vs Player\n'),
-    write('2. Player vs Computer\n'),
-    write('3. Computer vs Computer\n'),
-    write('4. Rules\n'),
-    write('5. Difficulty\n'),
-    write('0. Exit game\n\n').
+    write(' _   _            _                 _         \n'),
+    write('| \\ | | ___ _   _| |_ _ __ ___  ___| | _____  \n'),
+    write('|  \\| |/ _ \\ | | | __| \'__/ _ \\/ _ \\ |/ / _ \\ \n'),
+    write('| |\\  |  __/ |_| | |_| | |  __/  __/   < (_) |\n'),
+    write('|_| \\_|\\___|\\__,_|\\__|_|  \\___|\\___|_|\\_\\___/\n\n'),
+    write('             1. Player vs Player\n'),
+    write('             2. Player vs Computer\n'),
+    write('             3. Computer vs Computer\n'),
+    write('             4. Rules\n'),
+    write('             5. Difficulty\n'),
+    write('             0. Exit game\n\n'),
+    write('       By: @MrZephyr17 and @CiscoFrisco\n\n').
+
+
+
+
