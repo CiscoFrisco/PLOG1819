@@ -7,6 +7,7 @@
 
 :- use_module(library(lists)).
 :- use_module(library(system)).
+:- use_module(library(random)).
 
 /**
  * Entry point for the game. Prints the main menu, reads user's choice and redirects to

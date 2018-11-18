@@ -80,7 +80,7 @@ choose_difficulty:-
     write('3. Hard\n'),
     write('Choose option '),
     read(Option),
-    if_then_else((integer(Option), Option > 0, Option < 4), (retract(difficulty(Difficulty)), assert(difficulty(Option))), choose_difficulty).
+    if_then_else((integer(Option), Option > 0, Option < 4), (retract(difficulty(Difficulty)), assert(difficulty(Option + 1))), choose_difficulty).
 
 /**
  * Prints the main menu on the screen.
