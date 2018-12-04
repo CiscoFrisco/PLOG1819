@@ -1,5 +1,8 @@
 :- use_module(library(clpfd)).
 :- use_module(library(lists)).
+:- use_module(library(file_systems)).
+
+:- consult('io.pl').
 
 /**
  * groups(+Students, +Proj1Themes, +Proj2Themes, +GroupSize, +PreviousUCsInfo, -Proj1Groups, -Proj2Groups)
@@ -13,6 +16,12 @@
  * Proj2Groups - list of groups for the second project
  */ 
 groups(Students, Proj1Themes, Proj2Themes, GroupSize, PreviousUCsInfo, Proj1Groups, Proj2Groups).
+
+main(CWD, StudentsFile, Proj1ThemesFile, Proj2ThemesFile, PreviousUCsInfoFile, GroupSize):-
+    current_directory(_, CWD),
+    read_files(StudentsFile, Proj1ThemesFile, Proj2ThemesFile, PreviousUCsInfoFile, Students, Proj1Themes, Proj2Themes, PreviousUCsInfo),
+    groups(Students, Proj1Themes, Proj2Themes, GroupSize, PreviousUCsInfo, Proj1Groups, Proj2Groups).
+
 
 /**
  * haveWorkedTogether(+Student1, +Student2, +PreviousUCsInfo)
