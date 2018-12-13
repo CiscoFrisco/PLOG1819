@@ -5,14 +5,34 @@
  * PreviousUCsInfoFile - previous UCs info file name relative to cwd
  * Students - students information (ID and GPA)
  * PreviousUCsInfo - information regarding previous groups in other UCs
+ * Proj1Themes - themes for the first project
+ * Proj2Themes - themes for the second project
  */ 
-read_files(StudentsFile, PreviousUCsInfoFile, Students, PreviousUCsInfo):-
+read_files(StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, Students, PreviousUCsInfo, Proj1Themes, Proj2Themes):-
     open(StudentsFile, read, Str),
     read_file(Str, Students),
     close(Str),
     open(PreviousUCsInfoFile, read, Str2),
     read_file(Str2, PreviousUCsInfo),
+    open(Proj1ThemesFile, read, Str3),
+    read_themes_file(Str3, Proj1Themes),
+    open(Proj2ThemesFile, read, Str4),
+    read_themes_file(Str4, Proj2Themes),
     close(Str2).
+
+/**
+ * read_themes_file(+Stream, -List)
+ * 
+ * Stream - file stream
+ * List - list of themes
+ */ 
+read_themes_file(Stream,[]) :-
+    at_end_of_stream(Stream).
+
+read_themes_file(Stream,[X|L]) :-
+    \+ at_end_of_stream(Stream),
+    read(Stream,X),
+    read_themes_file(Stream,L).
 
 /**
  * read_file(+Stream, -List)
