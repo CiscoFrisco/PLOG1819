@@ -49,35 +49,31 @@ haveWorkedTogether(Student1, Student2, [H | _], 1):-
 haveWorkedTogether(Student1, Student2, [_ | T],_):-
     haveWorkedTogether(Student1, Student2, T).
 
-
 % TESTES
 
 constrain_group_size(Students, [MinSize, MaxSize], Vars):-
     length(Students, NumStudents),
     length(Vars, NumStudents),
-    get_num_groups(NumStudents, MinSize, MaxSize, Max),
-    domain(Vars, 1, Max),
-    get_size(MinSize, MaxSize, Size),
-    constrain_count(Vars, Size, Max, 1),
-    labeling([], Vars).
-
-get_num_groups(NumStudents, MinSize, MaxSize, Max):-
     MinNumGroups is NumStudents div MaxSize,
     MaxNumGroups is NumStudents div MinSize,
-    domain([Max], MinNumGroups, MaxNumGroups),
-    labeling([], [Max]).
+    write(MaxNumGroups),nl,
+    domain([Max],MinNumGroups,MaxNumGroups),
+    constrain_count(Vars,[MinSize,MaxSize], Max, 1),
+    labeling([],[Max]),
+    write('Max:'),write(Max),nl,
+    domain(Vars,1,Max),
+    labeling([], Vars),
+    write(Vars),
+    nl.
 
-get_size(MinSize, MaxSize, Size):-
-    domain([Size], MinSize, MaxSize),
-    labeling([], [Size]).
-
-constrain_count(Vars, Size, Max, Num):-
-    constrain_count_list(List, 1, Size, Max),
-    global_cardinality(Vars, List).
-
-constrain_count_list(List, Max, Size, Max).
-constrain_count_list(List, Num, Size, Max):-
+constrain_count(_,_,Max,Num):- 
+    Num #> Max,
+    !.
+constrain_count(Vars, [MinSize,MaxSize], Max, Num):-
+    count(Num, Vars, #=, Times),
+    write(MinSize),write('-'),write(MaxSize),nl,
+    write(Times),write('->'),write(Num),nl,
+    Times #>= MinSize #/\ Times #=< MaxSize,
     NextNum is Num + 1,
-    append(List, [Num - Size], NextList)
-    constrain_count_list(List, NextNum, Max).
+    constrain_count(Vars,[MinSize,MaxSize], Max, NextNum).
 
