@@ -56,23 +56,18 @@ constrain_group_size(Students, [MinSize, MaxSize], Vars):-
     length(Vars, NumStudents),
     MinNumGroups is NumStudents div MaxSize,
     MaxNumGroups is NumStudents div MinSize,
-    write(MaxNumGroups),nl,
     domain([Max],MinNumGroups,MaxNumGroups),
     constrain_count(Vars,[MinSize,MaxSize], Max, 1),
     labeling([],[Max]),
-    write('Max:'),write(Max),nl,
     domain(Vars,1,Max),
+    write('Max:'),write(Max),nl,
     labeling([], Vars),
     write(Vars),
     nl.
 
-constrain_count(_,_,Max,Num):- 
-    Num #> Max,
-    !.
+constrain_count(_,_,Max,Num):- Num #> Max,!. % tirando este cut funciona mas nunca mais acaba. Com este cut apenas tenta para um valor de Max
 constrain_count(Vars, [MinSize,MaxSize], Max, Num):-
     count(Num, Vars, #=, Times),
-    write(MinSize),write('-'),write(MaxSize),nl,
-    write(Times),write('->'),write(Num),nl,
     Times #>= MinSize #/\ Times #=< MaxSize,
     NextNum is Num + 1,
     constrain_count(Vars,[MinSize,MaxSize], Max, NextNum).
