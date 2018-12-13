@@ -15,7 +15,11 @@
  * Proj1Groups - list of groups for the first project
  * Proj2Groups - list of groups for the second project
  */ 
-groups(Students, NumThemes1, NumThemes2, GroupSize, PreviousUCsInfo, Proj1Groups, Proj2Groups).
+groups(Students, NumThemes, [MinSize , MaxSize], PreviousUCsInfo, Proj1Groups, Proj2Groups):-
+    domain(Dimension, MinSize, MaxSize),
+    length(Group, Dimension),
+    write("ola"),
+    labeling().
 
 /**
  * main(+CWD, +StudentsFile, +NumThemes1, +NumThemes2, +PreviousUCsInfoFile, +GroupSize)
@@ -27,21 +31,24 @@ groups(Students, NumThemes1, NumThemes2, GroupSize, PreviousUCsInfo, Proj1Groups
  * PreviousUCsInfoFile - previousUCsInfo file path relative to cwd
  * GroupSize - interval representing the possible group sizes
  */ 
-main(CWD, StudentsFile, NumThemes1, NumThemes2, PreviousUCsInfoFile, GroupSize):-
+main(CWD, StudentsFile, NumThemes, PreviousUCsInfoFile, GroupSize):-
     current_directory(_, CWD),
     read_files(StudentsFile, PreviousUCsInfoFile, Students, PreviousUCsInfo),
-    groups(Students, NumThemes1, NumThemes2, GroupSize, PreviousUCsInfo, Proj1Groups, Proj2Groups),
+    groups(Students, NumThemes, GroupSize, PreviousUCsInfo, Proj1Groups, Proj2Groups),
     write_files(Proj1Groups, Proj2Groups).
 
 /**
- * haveWorkedTogether(+Student1, +Student2, +PreviousUCsInfo)
+ * haveWorkedTogether(+Student1, +Student2, +ListOfGroups)
  * 
  * True if Student1 and Student2 have worked together before according to the given information.
  * 
  * Student1 - id of student1
  * Student2 - id of student2
- * PreviousUCsInfo - list of students that have worked together before
+ * ListOfGroups - list of students that have worked together before (in other UCs or in the first project)
  */  
-haveWorkedTogether(Student1, Student2, PreviousUCsInfo):-
-    member([Student1, Student2], PreviousUCsInfo);
-    member([Student2, Student1], PreviousUCsInfo).
+haveWorkedTogether(_, _, [], 0):-fail.
+haveWorkedTogether(Student1, Student2, [H | T], 1):-5
+    member(Student1, H),
+    member(Student2, H).
+haveWorkedTogether(Student1, Student2, [H | T],_):-
+    haveWorkedTogether(Student1, Student2, T).
