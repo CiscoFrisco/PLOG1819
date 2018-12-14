@@ -58,15 +58,13 @@ constrain_group_size(Students, [MinSize, MaxSize], Vars):-
     MaxNumGroups is NumStudents div MinSize,
     domain([Max],MinNumGroups,MaxNumGroups),
     domain(Vars,1,MaxNumGroups),
-    constrain_count(Vars,[MinSize,MaxSize], Max, 1),
-    labeling([], [Max | Vars]),
-    write(Vars),
-    nl.
+    constrain_count(Vars,[MinSize,MaxSize], Max, MaxNumGroups),
+    labeling([], [Max | Vars]), 
+    write(Vars),nl.
 
-constrain_count(_,_,Max,Num):- Num #> Max,!.
+constrain_count(_Vars,_,_Max,0):-!.
 constrain_count(Vars, [MinSize,MaxSize], Max, Num):-
     count(Num, Vars, #=, Times),
     Times #>= MinSize #/\ Times #=< MaxSize,
-    NextNum is Num + 1,
+    NextNum is Num - 1,
     constrain_count(Vars,[MinSize,MaxSize], Max, NextNum).
-
