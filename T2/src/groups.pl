@@ -33,6 +33,61 @@ main(CWD, StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, G
     groups(Students, GroupSize, PreviousUCsInfo, Proj1Themes, Proj2Themes, Proj1Groups, Proj2Groups),
     write_files(Proj1Groups, Proj2Groups).
 
+
+% TESTES
+
+constrain_group_size(Students, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
+    
+    length(Students, NumStudents),
+    length(Vars, NumStudents),
+    MaxNumGroups is NumStudents div MinSize,
+    MinNumGroupsMod is NumStudents mod MaxSize,
+    if_then_else(
+                    (MinNumGroupsMod = 0),
+                        (MinNumGroups is NumStudents div MaxSize),
+                        (MinNumGroups is (NumStudents div MaxSize) + 1)
+                ),
+    domain([Max],MinNumGroups,MaxNumGroups),
+    domain(Vars,1,MaxNumGroups),
+
+    constrain_count(Vars,[MinSize,MaxSize], Max, 1),
+    constrain_GPA(Students,Vars, Max, 1, 0, WorkedTogether),
+    write(WorkedTogether),nl,
+    labeling([], [Max | Vars]), 
+    write(Vars),nl.
+
+constrain_count(_Vars,_,Max,Num):- Num #> Max,!.
+constrain_count(Vars, [MinSize,MaxSize], Max,Num):-
+    count(Num, Vars, #=, Times),
+    Times #>= MinSize #/\ Times #=< MaxSize,
+    NextNum is Num + 1,
+    constrain_count(Vars,[MinSize,MaxSize],Max, NextNum).
+
+if_then_else(C,I,_E):-C,!,I.
+if_then_else(_C,_I,E):- E.
+
+getGPAs(_,[],GPA,GPA).
+getGPAs(Students,[H|T],GPAs,FinalGPAs):-
+    nth1(H,Students,Student),   
+    [N,GPA] = Student,
+    append(GPAs,[GPA],NewGPAs),
+    getGPAs(Students,T,NewGPAs,FinalGPAs).
+
+constrain_GPA(_, _,Max, Num, Work,Work):- Num #> Max, !.
+constrain_GPA(Students, Vars, Max, Num, WorkedTogether,FinalWorkedTogether):-
+    write(Num),nl,
+    findall(X, nth1(X, Vars, Num), GroupElems),
+    write(GroupElems),
+    getGPAs(Students,GroupElems,[],GPAs),
+    min_member(MinGPA, GPAs),
+    max_member(MaxGPA, GPAs),
+    Diff is MaxGPA - MinGPA,
+    write(Diff),nl,
+    NextNum is Num + 1,
+    NextWorkedTogether is Diff + WorkedTogether,
+    constrain_GPA(Students,Vars, Max,NextNum, NextWorkedTogether, FinalWorkedTogether).
+
+
 /**
  * haveWorkedTogether(+Student1, +Student2, +ListOfGroups)
  * 
@@ -52,50 +107,19 @@ haveWorkedTogether(Student1, Student2, [H | _T], 0):-
 haveWorkedTogether(Student1, Student2, [_H | T], Res):-
     haveWorkedTogether(Student1, Student2, T, Res).
 
-% TESTES
-
-constrain_group_size(Students, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
-    length(Students, NumStudents),
-    length(Vars, NumStudents),
-    MaxNumGroups is NumStudents div MinSize,
-    MinNumGroupsMod is NumStudents mod MaxSize,
-    if_then_else((MinNumGroupsMod = 0),(MinNumGroups is NumStudents div MaxSize),(MinNumGroups is (NumStudents div MaxSize) + 1)),
-    domain([Max],MinNumGroups,MaxNumGroups),
-    domain(Vars,1,MaxNumGroups),
-    % max_member(MaxNum,Vars),
-    % MaxNum #= Max,
-    constrain_count(Vars,[MinSize,MaxSize], Max, 1),
-    constrain_worked_before(Students, PreviousUCsInfo, Vars, Max, 1),
-    labeling([], [Max | Vars]), 
-    write(Vars),nl.
-
-constrain_count(_Vars,_,Max,Num):- Num #> Max,!.
-constrain_count(Vars, [MinSize,MaxSize], Max,Num):-
-    count(Num, Vars, #=, Times),
-    Times #>= MinSize #/\ Times #=< MaxSize,
-    NextNum is Num + 1,
-    constrain_count(Vars,[MinSize,MaxSize],Max, NextNum).
-
-if_then_else(C,I,_E):-C,!,I.
-if_then_else(_C,_I,E):- E.
-
 constrain_worked_before_aux(_, _, []).
 constrain_worked_before_aux(Students, PreviousUCsInfo, [[S1, S2] | T]):-
     nth1(S1, Students, Student1),
     nth1(S2, Students, Student2),
     haveWorkedTogether(Student1, Student2, PreviousUCsInfo, Res),
-    Res #= 1,
-    format("~d - ~d~n", [Student1, Student2]),
-    write(Res),nl,
     constrain_worked_before_aux(Students, PreviousUCsInfo, T).
 
 constrain_worked_before(_, _, _,Max, Num):- Num #> Max, !.
 constrain_worked_before(Students, PreviousUCsInfo, Vars, Max, Num):-
-    write('\nYee '), write(Num),nl,
     findall(X, nth1(X, Vars, Num), GroupElems),
     length(GroupElems,GroupLen),
     if_then_else(
-                    (GroupLen \= 1),
+                    (GroupLen > 1),
                     (
                         findall(Y, comb(2,GroupElems,Y), StudentPairs),
                         constrain_worked_before_aux(Students, PreviousUCsInfo, StudentPairs),
