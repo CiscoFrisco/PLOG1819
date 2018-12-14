@@ -54,13 +54,18 @@ haveWorkedTogether(Student1, Student2, [_ | T],_):-
 constrain_group_size(Students, [MinSize, MaxSize], Vars):-
     length(Students, NumStudents),
     length(Vars, NumStudents),
-    MinNumGroups is NumStudents div MaxSize,
     MaxNumGroups is NumStudents div MinSize,
+    MinNumGroupsMod is NumStudents mod MaxSize,
+    if_then_else((MinNumGroupsMod = 0),(MinNumGroups is NumStudents div MaxSize),(MinNumGroups is (NumStudents div MaxSize) + 1)),
+    write(MinNumGroups),write('-'),write(MaxNumGroups),
     domain([Max],MinNumGroups,MaxNumGroups),
     domain(Vars,1,MaxNumGroups),
+    max_member(NumMax,Vars),
+    NumVars #=< Max,
     constrain_count(Vars,[MinSize,MaxSize], Max, MaxNumGroups),
     labeling([], [Max | Vars]), 
-    write(Vars),nl.
+    write(Vars),nl,
+    write(Max),nl.
 
 constrain_count(_Vars,_,_Max,0):-!.
 constrain_count(Vars, [MinSize,MaxSize], Max, Num):-
@@ -68,3 +73,6 @@ constrain_count(Vars, [MinSize,MaxSize], Max, Num):-
     Times #>= MinSize #/\ Times #=< MaxSize,
     NextNum is Num - 1,
     constrain_count(Vars,[MinSize,MaxSize], Max, NextNum).
+
+if_then_else(C,I,_E):-C,!,I.
+if_then_else(_C,_I,E):- E.
