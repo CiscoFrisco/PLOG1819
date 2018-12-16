@@ -65,7 +65,7 @@ constrain_group_size(Students, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
     % max_member(MaxNum,Vars),
     % MaxNum #= Max,
     constrain_count(Vars,[MinSize,MaxSize], Max, 1),
-    constrain_worked_before(Students, PreviousUCsInfo, Vars, Max, 1),
+    constrain_worked_before(Vars, PreviousUCsInfo),
     labeling([], [Max | Vars]), 
     write(Vars),nl.
 
@@ -79,32 +79,9 @@ constrain_count(Vars, [MinSize,MaxSize], Max,Num):-
 if_then_else(C,I,_E):-C,!,I.
 if_then_else(_C,_I,E):- E.
 
-constrain_worked_before_aux(_, _, []).
-constrain_worked_before_aux(Students, PreviousUCsInfo, [[S1, S2] | T]):-
-    nth1(S1, Students, Student1),
-    nth1(S2, Students, Student2),
-    haveWorkedTogether(Student1, Student2, PreviousUCsInfo, Res),
-    Res #= 1,
-    format("~d - ~d~n", [Student1, Student2]),
-    write(Res),nl,
-    constrain_worked_before_aux(Students, PreviousUCsInfo, T).
-
-constrain_worked_before(_, _, _,Max, Num):- Num #> Max, !.
-constrain_worked_before(Students, PreviousUCsInfo, Vars, Max, Num):-
-    write('\nYee '), write(Num),nl,
-    findall(X, nth1(X, Vars, Num), GroupElems),
-    length(GroupElems,GroupLen),
-    if_then_else(
-                    (GroupLen \= 1),
-                    (
-                        findall(Y, comb(2,GroupElems,Y), StudentPairs),
-                        constrain_worked_before_aux(Students, PreviousUCsInfo, StudentPairs),
-                        NextNum is Num + 1,
-                        constrain_worked_before(Students,PreviousUCsInfo, Vars, Max, NextNum)
-                    ),
-                    _
-                ).
-
-comb(0,_,[]).
-comb(N,[X|T],[X|Comb]):-N>0,N1 is N-1,comb(N1,T,Comb).
-comb(N,[_|T],Comb):-N>0,comb(N,T,Comb).
+constrain_worked_before(_, []).
+constrain_worked_before(Vars, [[S1, S2] | T]):-
+    element(S1,Vars,X),
+    element(S2,Vars,Y),
+    X #\= Y,
+    constrain_worked_before(Vars, T).
