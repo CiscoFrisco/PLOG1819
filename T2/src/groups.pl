@@ -30,7 +30,7 @@ groups(Students, [MinSize , MaxSize], PreviousUCsInfo, Proj1Themes, Proj2Themes,
 main(CWD, StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, GroupSize):-
     current_directory(_, CWD),
     read_files(StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, Students, PreviousUCsInfo, Proj1Themes, Proj2Themes),
-    groups(Students, GroupSize, PreviousUCsInfo, Proj1Themes, Proj2Themes, Proj1Vars, Proj2Vars, Max1, Max2),
+    solve(Students, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars, Max),
     get_groups(Students, Proj1Vars, [], Proj1Groups, 1, Max1),
     get_groups(Students, Proj2Vars, [], Proj2Groups, 1, Max2),
     write_files(Proj1Groups, Proj2Groups).
@@ -43,16 +43,15 @@ get_groups_aux(Students, [H | T], CurrGroup, Group):-
 
 get_groups(_, _, _, Num, Max):- Max = Num + 1.
 get_groups(Students, ProjVars, CurrProjGroups, ProjGroups, Num, Max):-
-    findall(X, nth1(X,ProjVars, Num), List),
+    findall(X, nth1(X, ProjVars, Num), List),
     get_groups_aux(Students, List, [], Group),
     append(CurrProjGroups, [Group], NextProjGroups),
     NextNum is Num + 1,
     get_groups(Students, ProjVars, NextProjGroups, ProjGroups, NextNum, Max).
 
-
 % TESTES
 
-constrain_group_size(Students, PreviousUCsInfo, [MinSize, MaxSize], Vars, Max):-
+constrain_group_size(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Vars, Max):-
     
     length(Students, NumStudents),
     length(Vars, NumStudents),
@@ -63,27 +62,25 @@ constrain_group_size(Students, PreviousUCsInfo, [MinSize, MaxSize], Vars, Max):-
                         (MinNumGroups is NumStudents div MaxSize),
                         (MinNumGroups is (NumStudents div MaxSize) + 1)
                 ),
+    domain([Max], MinNumGroups, MaxNumGroups),
+    domain(Vars, 1, MaxNumGroups),
     
-    domain([Max],MinNumGroups,MaxNumGroups),
-    domain(Vars,1,MaxNumGroups),
-    
-    length(GroupIDs,Max),
-    domain(GroupIDs, 1, Max),
-    all_distinct(GroupIDs),
-    
-    constrain_count(Vars,[MinSize,MaxSize], Max, 1),
-    constrain_worked_before(Students, PreviousUCsInfo, Vars, GroupIDs, Count),   
-    %constrain_GPA(Students,Vars, Max, 1, Diffs),
-    %sum(Diffs, =, SumDiffs),
-    sum(Count, #=, SumCount),
+    % length(GroupIDs, Max),
+    % domain(GroupIDs, 1, Max),
+    % all_distinct(GroupIDs),
+    nvalue(Max, Vars),
+    constrain_count(Vars, [MinSize, MaxSize], Max, 1),
+    %constrain_worked_before(Students, PreviousUCsInfo, Vars, 1, Max, Count),   
+    % constrain_GPA(GPAs, Vars, Max, 1, Diffs),
+    % sum(Diffs, #=, SumDiffs),
+    %sum(Count, #=, SumCount),
     %Min #= SumDiffs + SumCount,
-    append(Vars, GroupIDs, AllVars),
-    append(AllVars, [Max], AAllVars),
+    append(Vars, [Max], AllVars),
+    % append(AllVars, [Max], AAllVars),
 
-    labeling([minimize(SumCount),min], AAllVars),
-    write(GroupIDs),nl.
+    labeling([], AllVars).
 
-constrain_both_projects(Students, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars, Max):-
+solve(Students, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars, Max):-
     length(Students, NumStudents),
     length(Proj1Vars, NumStudents),
     length(Proj2Vars, NumStudents),
@@ -94,59 +91,55 @@ constrain_both_projects(Students, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars
                         (MinNumGroups is NumStudents div MaxSize),
                         (MinNumGroups is (NumStudents div MaxSize) + 1)
                 ),
-    
-    domain([Max],MinNumGroups,MaxNumGroups),
-    domain(Proj1Vars,1,MaxNumGroups),
-    domain(Proj2Vars,1,MaxNumGroups),
+    domain([Max], MinNumGroups, MaxNumGroups),
+    domain(Proj1Vars, 1, MaxNumGroups),
+    domain(Proj2Vars, 1, MaxNumGroups),
     length(GroupIDs1, Max),
     domain(GroupIDs1, 1, Max),
     length(GroupIDs2, Max),
     domain(GroupIDs2, 1, Max),
     all_distinct(GroupIDs1),
-    
-    constrain_count(Proj1Vars,[MinSize,MaxSize], Max, 1),
-    constrain_count(Proj2Vars,[MinSize,MaxSize], Max, 1),
-    constrain_worked_before(Students, PreviousUCsInfo, Proj1Vars, GroupIDs1, Count),   
-    %constrain_GPA(Students,Vars, Max, 1, Diffs),
-    %sum(Diffs, =, SumDiffs),
+    constrain_count(Proj1Vars,[MinSize, MaxSize], Max, 1),
+    constrain_count(Proj2Vars,[MinSize, MaxSize], Max, 1),
+    constrain_worked_before(Students, PreviousUCsInfo, Proj1Vars, GroupIDs1, Count),
+    constrain_worked_before(Students, PreviousUCsInfo, Proj2Vars, GroupIDs2, Count2),   
+    constrain_GPA(Students, Proj1Vars, Max, 1, Diffs1),
+    constrain_GPA(Students, Proj2Vars, Max, 1, Diffs2),
+    constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, GroupIDs2),
+    sum(Diffs1, #=, SumDiffs),
     sum(Count, #=, SumCount),
-    %Min #= SumDiffs + SumCount,
-    append(Vars, GroupIDs1, AllVars),
-    append(AllVars, [Max], AAllVars),
+    sum(Diffs2, #=, SumDiffs2),
+    sum(Count2, #=, SumCount2),
+    Min #= SumDiffs + SumCount + SumDiffs2 + SumCount2,
+    append(Proj1Vars, Proj2Vars, ProjVars),
+    append(ProjVars, [Max], AllVars),
+    labeling([minimize(Min), min], AllVars).
 
-    labeling([minimize(SumCount),min], AAllVars),
-    write(GroupIDs),nl.
-
-constrain_count(_Vars,_,Max,Num):- Num #> Max,!.
-constrain_count(Vars, [MinSize,MaxSize], Max,Num):-
+constrain_count(_, _, Max, Num):- Num #> Max.
+constrain_count(Vars, [MinSize, MaxSize], Max, Num):-
     count(Num, Vars, #=, Times),
     Times #>= MinSize #/\ Times #=< MaxSize,
     NextNum is Num + 1,
-    constrain_count(Vars,[MinSize,MaxSize],Max, NextNum).
+    constrain_count(Vars, [MinSize, MaxSize], Max, NextNum).
 
-if_then_else(C,I,_E):-C,!,I.
-if_then_else(_C,_I,E):- E.
+if_then_else(C, I, _):- C, !, I.
+if_then_else(_, _, E):- E.
 
-getGPAs(_,[],GPA,GPA).
-getGPAs(Students,[H|T],GPAs,FinalGPAs):-
-    element(H,Students,Student),   
-    [_,GPA] = Student,
-    append(GPAs,[GPA],NewGPAs),
-    getGPAs(Students,T,NewGPAs,FinalGPAs).
+getGPAs(_, [], []).
+getGPAs(GPAs, [H|T], [GroupGPAsH | GroupGPAsT]):-
+    element(H, GPAs, GPA),   
+    GroupGPAsH #= GPA,
+    getGPAs(GPAs, T, GroupGPAsT).
 
-constrain_GPA(_, _,Max, Num, []):- Num #> Max, !.
-constrain_GPA(Students, Vars, Max, Num, [DiffsH | DiffsT]):-
-    write(Num),nl,
+constrain_GPA(_, _, Max, Num, []):- Num #> Max, !.
+constrain_GPA(GPAs, Vars, Max, Num, [DiffsH | DiffsT]):-
     findall(X, element(X, Vars, Num), GroupElems),
-    write(GroupElems),
-    getGPAs(Students,GroupElems,[],GPAs),
-    min_member(MinGPA, GPAs),
-    max_member(MaxGPA, GPAs),
-    Diff is MaxGPA - MinGPA,
-    write(Diff),nl,
+    getGPAs(GPAs, GroupElems, [], GroupGPAs),
+    minimum(MinGPA, GroupGPAs),
+    maximum(MaxGPA, GroupGPAs),
     NextNum is Num + 1,
-    DiffsH #= Diff,
-    constrain_GPA(Students,Vars, Max,NextNum, DiffsT).
+    DiffsH #= MaxGPA - MinGPA,
+    constrain_GPA(GPAs, Vars, Max, NextNum, DiffsT).
 
 
 /**
@@ -159,10 +152,10 @@ constrain_GPA(Students, Vars, Max, Num, [DiffsH | DiffsT]):-
  * ListOfGroups - list of students that have worked together before (in other UCs or in the first project)
  */  
 haveWorkedTogether(_, _, [], 1):- !.
-haveWorkedTogether(Student1, Student2, [H | _T], 0):-
+haveWorkedTogether(Student1, Student2, [H | _], 0):-
     element(_, H, Student1),
-    element(_, H, Student2).
-haveWorkedTogether(Student1, Student2, [_H | T], Res):-
+    element(_, H, Student2), !.
+haveWorkedTogether(Student1, Student2, [_ | T], Res):-
     haveWorkedTogether(Student1, Student2, T, Res).
 
 constrain_worked_before_aux(_, _, [], FinalCount, FinalCount):- !.
@@ -174,31 +167,39 @@ constrain_worked_before_aux(Students, PreviousUCsInfo, [[S1, S2] | T], CurrCount
     NextCount is CurrCount + Res,
     constrain_worked_before_aux(Students, PreviousUCsInfo, T, NextCount, Count).
 
-constrain_worked_before(_, _, _, [], []).
-constrain_worked_before(Students, PreviousUCsInfo, Vars, [GroupID | RestIDs], [CurrCountH|CurrCountT]):-
-    findall(X, element(X, Vars, GroupID), GroupElems),
+constrain_worked_before(_, _, _, [], []):- !.
+constrain_worked_before(Students, PreviousUCsInfo, Vars, [GroupID | RestIDs], [CurrCountH | CurrCountT]):-
+    count(GroupID, Vars, #=, GroupLen),
     length(GroupElems, GroupLen),
-    write(GroupLen),nl,
+    findall(X, element(X, Vars, GroupID), GroupElems),
+    format('Num: ~d~n', [GroupID]),nl,
+    format('GroupLen: ~d~n', [GroupLen]),nl,
     if_then_else(
                     (GroupLen > 1),
                     (
                         write('Oi\n'),
-                        findall(Y, comb(2,GroupElems,Y), StudentPairs),
+                        findall(Y, comb(2, GroupElems, Y), StudentPairs),
                         constrain_worked_before_aux(Students, PreviousUCsInfo, StudentPairs, 0, GroupCount),
                         write('Fds: '), write(GroupCount), nl,
                         CurrCountH #= GroupCount
                     ),
                     CurrCountH #= 0
                 ),
-    constrain_worked_before(Students,PreviousUCsInfo, Vars, RestIDs, CurrCountT).
+    constrain_worked_before(Students, PreviousUCsInfo, Vars, RestIDs, CurrCountT).
 
-comb(0,_,[]):-!.
-comb(N,[X|T],[X|Comb]):-N>0,N1 is N-1,comb(N1,T,Comb).
-comb(N,[_|T],Comb):-N>0,comb(N,T,Comb).
+comb(0, _, []):- !.
+comb(N, [X | T], [X | Comb]):- N>0, N1 is N-1, comb(N1, T, Comb).
+comb(N, [_ | T], Comb):- N>0, comb(N, T, Comb).
 
+constrain_worked_first_project_aux([], _, []).
+constrain_worked_first_project_aux([H | T], Proj2Vars, [SameGroupH | SameGroupT]):-
+    element(H, Proj2Vars, X),
+    SameGroupH #= X,
+    constrain_worked_first_project_aux(T, Proj2Vars, SameGroupT).
+
+constrain_worked_first_project(_, _, _, []).
 constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, [GroupID | RestIDs]):-
     findall(X, element(X, Proj1Vars, GroupID), GroupElems),
-    findall(Y, element(X,Proj2Vars, Y), SameGroup2),
+    constrain_worked_first_project_aux(GroupElems, Proj2Vars, SameGroup2),
     all_distinct(SameGroup2),
-    constrain_worked_first_project(Students,Proj1Vars, Proj2Vars, RestIDs).
-
+    constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, RestIDs).

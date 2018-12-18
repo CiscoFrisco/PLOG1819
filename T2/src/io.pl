@@ -57,10 +57,10 @@ read_file(Stream,[[X, Y]|L]) :-
  */ 
 write_files(Proj1Groups, Proj2Groups):-
     open('proj1groups.txt', write, Str),
-    write_groups(Str, Proj1Groups),
+    write_groups(Str, Proj1Groups, 1), 
     close(Str),
     open('proj2groups.txt', write, Str2),
-    write_groups(Str2, Proj2Groups),
+    write_groups(Str2, Proj2Groups, 1),
     close(Str2).
 
 /**
@@ -81,7 +81,9 @@ write_group(Stream, [H | T]):-
  * Stream - file stream
  * Groups - list of groups
  */ 
-write_groups(_, []).
-write_groups(Stream, [H | T]):-
+write_groups(_, [], _).
+write_groups(Stream, [H | T], Count):-
+    format(Stream, 'Group ~d: ', [Count]),
     write_group(Stream, H),
-    write_groups(Stream, T).
+    NextCount is Count + 1,
+    write_groups(Stream, T, NextCount). 
