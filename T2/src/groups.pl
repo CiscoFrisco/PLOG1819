@@ -79,16 +79,16 @@ constrain_group_size(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Vars):
     %sum(GPADiffs, #=, SumGPADiffs),
 
     %constrain Worked Before
-    constrain_worked_before(Students,PreviousUCsInfo,Vars,NumGroups,1),
+    constrain_worked_before(Students, PreviousUCsInfo, Vars,  NumGroups, 1, WorkedBefore),
     %sum(WorkedBefore, #=, SumWorkedBefore),
 
-    %Min #= SumGPADiffs + SumWorkedTogether,
+    %Min #= SumGPADiffs + SumWorkedBefore,
     %labeling
     append(Vars, [NumGroups], AllVars),
-    labeling([], AllVars),
-    write(SumDiffs),nl.
+    labeling([], AllVars).
+    %write(SumDiffs),nl.
 
-constrain_count(_, _, NumGroups, Num):- Num #> NumGroups.
+constrain_count(_, _, NumGroups, Num):-Num #> NumGroups.
 constrain_count(Vars, [MinSize, MaxSize], NumGroups, Num):-
     count(Num, Vars, #=, Times),
     Times #>= MinSize #/\ Times #=< MaxSize,
@@ -121,30 +121,33 @@ constrain_GPA(GPAs, Vars, NumGroups, Num, [DiffsH | DiffsT]):-
     constrain_GPA(GPAs, Vars, NumGroups, NextNum, DiffsT).   
 
 
-haveWorkedTogether(_, _, [], 1):- !.
-haveWorkedTogether(Student1, Student2, [H | _], 0):-
-    element(_, H, Student1),
-    element(_, H, Student2), !.
-haveWorkedTogether(Student1, Student2, [_ | T], Res):-
-    haveWorkedTogether(Student1, Student2, T, Res).
+workedTogetherPair([],_,[]).
+workedTogetherPair([[PreviousS1,PreviousS2] | RestPrevious], [S1,S2], [Val | Rest]):-
+    List = [PreviousS1,PreviousS2,S1,S2],
+    nvalue(DistinctMembers,List),
+    S1 #\= 0 #/\ S2 #\= 0 #/\  DistinctMembers #> 2 #<=> B,
+    workedTogetherPair(RestPrevious, [S1, S2],  Rest).
 
-getStudentElems([],[],_).
-getStudentElems([CurrS | RestS], Elems, GroupID):-
-    CurrS #= GroupID,
-    getStudentElems( RestS,  Elems, GroupID).
-getStudentElems([CurrS | RestS], [CurrElem | Elems], GroupID):-
-    CurrS #= GroupID,
-    CurrElem #= CurrS,
-    getStudentElems(RestS, Elems, GroupID).
+haveWorkedTogether(_, [], []).
+haveWorkedTogether(PreviousUCsInfo, [CurrPair | RestPairs], [CurrPairWT | RestPairsWT]):-
+    workedTogetherPair(PreviousUCsInfo, CurrPair, Values),
+    sum(Values, #=, CurrPairWT),
+    haveWorkedTogether(PreviousUCsInfo, RestPairs, RestPairsWT).
 
+getStudentElems([], [], _,[]).
+getStudentElems([Student_A | Students], [H|Vars], GroupID,[CurrElem | Elems]):-
+    H #= GroupID #<=> B,
+    GroupGPAsH #= B * Student_A,
+    getGPAs(Students, Vars, GroupID, Elems).
 
-constrain_worked_before(_, _, _, [], []):- !.
-constrain_worked_before(Students, PreviousUCsInfo, Vars,  NumGroups, GroupID).
-    getStudentElems(Vars, Elems, GroupID),
+constrain_worked_before(_, _, _, NumGroups, Num):- Num #> NumGroups,!.
+constrain_worked_before(Students, PreviousUCsInfo, Vars,  NumGroups, GroupID, [GroupWT | RestWT]):-
+    getStudentElems(Students, Vars, GroupID, Elems),
     comb(2,Elems,ElemPairs),
-    write(Elems).
-
-
+    haveWorkedTogether(PreviousUCsInfo, ElemPairs, GroupWTList),
+    sum(GroupWTList,#=, GroupWT),
+    NextGroupID is GroupID + 1,
+    constrain_worked_before(Students, PreviousUCsInfo, Vars,  NumGroups, NextGroupID, [GroupWT | RestWT]).
 
 constrain_worked_first_project_aux([], _, []).
 constrain_worked_first_project_aux([H | T], Proj2Vars, [SameGroupH | SameGroupT]):-
