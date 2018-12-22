@@ -1,6 +1,8 @@
 PROJECT 1 GROUPS
 Group 1: 3  
 Theme: neutreeko
+
 Group 2: 1  2  
 Theme: sudoku
+
 

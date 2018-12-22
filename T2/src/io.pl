@@ -60,7 +60,7 @@ write_groups(Stream, [H | T], Count, Themes, ThemesLen):-
     write_group(Stream, H),
     Index is Count mod ThemesLen,
     nth1(Index, Themes, Theme),
-    format(Stream, 'Theme: ~s~n', [Theme]),
+    format(Stream, 'Theme: ~s~n~n', [Theme]),
     NextCount is Count + 1,
     write_groups(Stream, T, NextCount, Themes, ThemesLen). 
 
@@ -77,5 +77,5 @@ write_ter([H | T], Themes, ThemesLen, Count):-
     NextCount is Count + 1,
     Index is Count mod ThemesLen,
     nth1(Index, Themes, Theme),
-    write('Theme: '), write(Theme), nl, nl,
+    format('Theme: ~s~n~n', [Theme]),
     write_ter(T, Themes, ThemesLen, NextCount).
