@@ -4,36 +4,24 @@
 
 :- consult('io.pl').
 
-/**
- * groups(+Students, +Proj1Themes, +Proj2Themes, +GroupSize, +PreviousUCsInfo, -Proj1Groups, -Proj2Groups)
- * 
- * Students - list of students (name/id and their gpa)
- * NumThemes1 - number of available themes for the first project
- * NumThemes2 - number of available themes for the second project
- * GroupSize - interval representing the possible group sizes
- * PreviousUCsInfo - list of students that have worked together before
- * Proj1Groups - list of groups for the first project
- * Proj2Groups - list of groups for the second project
- */ 
-groups(Students, [MinSize , MaxSize], PreviousUCsInfo, Proj1Themes, Proj2Themes, Proj1Vars, Proj2Vars, Max1, Max2).
-
-/**
- * main(+CWD, +StudentsFile, +PreviousUCsInfoFile, +GroupSize)
- * 
- * CWD - current working directory
- * StudentsFile - students file path relative to cwd
- * NumThemes1 - number of available themes for the first project
- * NumThemes2 - number of available themes for the second project
- * PreviousUCsInfoFile - previousUCsInfo file path relative to cwd
- * GroupSize - interval representing the possible group sizes
- */ 
-main(CWD, StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, GroupSize):-
-    current_directory(_, CWD),
-    read_files(StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, Students, PreviousUCsInfo, Proj1Themes, Proj2Themes),
-    solve(Students, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars, Max),
+groups_ter(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Themes, Proj2Themes):-
+    solve(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars, Max1, Max2),
     get_groups(Students, Proj1Vars, [], Proj1Groups, 1, Max1),
     get_groups(Students, Proj2Vars, [], Proj2Groups, 1, Max2),
-    write_files(Proj1Groups, Proj2Groups).
+    write('\nPROJECT 1 GROUPS\n'),
+    length(Proj1Themes, Proj1ThemesLen),
+    length(Proj2Themes, Proj2ThemesLen),
+    write_ter(Proj1Groups, Proj1Themes, Proj1ThemesLen, 1),
+    write('PROJECT 2 GROUPS\n'),
+    write_ter(Proj2Groups, Proj2Themes, Proj2ThemesLen, 1). 
+
+groups_files(CWD, StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, GroupSize):-
+    current_directory(_, CWD),
+    read_files(StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, Students, GPAs, PreviousUCsInfo, Proj1Themes, Proj2Themes),
+    solve(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars, Max1, Max2),
+    get_groups(Students, Proj1Vars, [], Proj1Groups, 1, Max1),
+    get_groups(Students, Proj2Vars, [], Proj2Groups, 1, Max2),
+    write_files(Proj1Groups, Proj2Groups, Proj1Themes, Proj2Themes).
 
 get_groups_aux(_, [], Group, Group).
 get_groups_aux(Students, [H | T], CurrGroup, Group):-
@@ -41,7 +29,7 @@ get_groups_aux(Students, [H | T], CurrGroup, Group):-
     append(CurrGroup, [Student], NextGroup),
     get_groups_aux(Students, T, NextGroup, Group).
 
-get_groups(_, _, _, Num, Max):- Max = Num + 1.
+get_groups(_, _, Groups, Groups, Num, Max):- Num > Max.
 get_groups(Students, ProjVars, CurrProjGroups, ProjGroups, Num, Max):-
     findall(X, nth1(X, ProjVars, Num), List),
     get_groups_aux(Students, List, [], Group),
@@ -52,7 +40,7 @@ get_groups(Students, ProjVars, CurrProjGroups, ProjGroups, Num, Max):-
 % TESTES
 
 
-solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars):-
+solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars, NumGroups1, NumGroups2):-
     
     %create list of Vars with the same length of students
     length(Students, NumStudents),
@@ -161,7 +149,7 @@ constrain_GPA(GPAs, Vars, NumGroups, Num, [DiffsH | DiffsT]):-
     constrain_GPA(GPAs, Vars, NumGroups, NextNum, DiffsT).   
 
 getGroupIDs([],[],_,[]).
-getGroupIDs([CS | RS], [CV | RV], [S1,S2],RestID):-
+getGroupIDs([CS | RS], [_ | RV], [S1,S2],RestID):-
     CS \= S1 , 
     CS \= S2,
     getGroupIDs( RS,  RV, [S1, S2], RestID).
@@ -173,13 +161,13 @@ getGroupIDs([CS | RS], [CV | RV], [S1,S2],[CurrID|RestID]):-
 constrain_worked_before(_, [], _, []).
 constrain_worked_before(Students, [CurrPair | RestPairs], Vars, [PairWT | RestWT]):-
     getGroupIDs(Students, Vars,CurrPair, CurrIDs),
-    nvalue(DistinctMembers,CurrIDs),
+    nvalue(DistinctMembers,CurrIDs),    
     DistinctMembers #= 1 #<=>B,
     PairWT #= B,
     constrain_worked_before(Students,  RestPairs, Vars,  RestWT).
 
 get_group([], _, _, []).
-get_group([H1 | T1], [H2 | T2] ,Num,  Rest):-
+get_group([H1 | T1], [_ | T2] ,Num,  Rest):-
     H1 #\= Num,
     get_group(T1, T2, Num, Rest).
 get_group([H1 | T1], [H2 | T2], Num, [Elem | Rest]):-
