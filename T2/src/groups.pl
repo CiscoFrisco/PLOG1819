@@ -17,25 +17,27 @@ if_then_else(_, _, E):- E.
 
 
 groups_ter(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Themes, Proj2Themes):-
-    solve_only_first(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars),
+    solve(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars),
     max_member(NumGroups1, Proj1Vars),
-    %max_member(NumGroups2, Proj2Vars),
+    max_member(NumGroups2, Proj2Vars),
     get_groups(Students, Proj1Vars, [], Proj1Groups, 1, NumGroups1),
-    %get_groups(Students, Proj2Vars, [], Proj2Groups, 1, NumGroups2),
+    get_groups(Students, Proj2Vars, [], Proj2Groups, 1, NumGroups2),
     write('\nPROJECT 1 GROUPS\n'),
     length(Proj1Themes, Proj1ThemesLen),
-    %length(Proj2Themes, Proj2ThemesLen),
-    write_ter(Proj1Groups, Proj1Themes, Proj1ThemesLen, 0), !.
-    %write('PROJECT 2 GROUPS\n'),
-    %write_ter(Proj2Groups, Proj2Themes, Proj2ThemesLen, 0). 
+    length(Proj2Themes, Proj2ThemesLen),
+    write_ter(Proj1Groups, Proj1Themes, Proj1ThemesLen, 0),
+    write('PROJECT 2 GROUPS\n'),
+    write_ter(Proj2Groups, Proj2Themes, Proj2ThemesLen, 0), !. 
 
 groups_files(CWD, StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, GroupSize):-
     current_directory(_, CWD),
     read_files(StudentsFile, PreviousUCsInfoFile, Proj1ThemesFile, Proj2ThemesFile, Students, GPAs, PreviousUCsInfo, Proj1Themes, Proj2Themes),
-    solve(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars, Max1, Max2),
-    get_groups(Students, Proj1Vars, [], Proj1Groups, 1, Max1),
-    get_groups(Students, Proj2Vars, [], Proj2Groups, 1, Max2),
-    write_files(Proj1Groups, Proj2Groups, Proj1Themes, Proj2Themes).
+    solve(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars, Proj2Vars),
+    max_member(NumGroups1, Proj1Vars),
+    max_member(NumGroups2, Proj2Vars),
+    get_groups(Students, Proj1Vars, [], Proj1Groups, 1, NumGroups1),
+    get_groups(Students, Proj2Vars, [], Proj2Groups, 1, NumGroups2),
+    write_files(Proj1Groups, Proj2Groups, Proj1Themes, Proj2Themes), !.
 
 get_groups_aux(_, [], Group, Group):-!.
 get_groups_aux(Students, [H | T], CurrGroup, Group):-
