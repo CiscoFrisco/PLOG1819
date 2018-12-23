@@ -179,9 +179,8 @@ constrain_size([H | T],[MinSize,MaxSize]):-
 
 
 get_elems(_, _, NumGroups,Num,[]):- Num > NumGroups, !.
-get_elems(Vars, [MinSize, MaxSize], NumGroups, Num,[H | T]):-
+get_elems(Vars, [MinSize, MaxSize], NumGroups, Num,[Times | T]):-
     count(Num, Vars, #=, Times),
-    H #= Times,
     NextNum is Num + 1,
     get_elems(Vars, [MinSize, MaxSize], NumGroups, NextNum, T). 
 
@@ -225,8 +224,7 @@ constrain_worked_before(_, [], _, []).
 constrain_worked_before(Students, [CurrPair | RestPairs], Vars, [PairWT | RestWT]):-
     getGroupIDs(Students, Vars,CurrPair, CurrIDs),
     nvalue(DistinctMembers,CurrIDs),    
-    DistinctMembers #= 1 #<=>B,
-    PairWT #= B,
+    DistinctMembers #= 1 #<=> PairWT,
     constrain_worked_before(Students,  RestPairs, Vars,  RestWT).
 
 get_group([], _, _, [],0).
