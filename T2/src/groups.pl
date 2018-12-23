@@ -53,7 +53,6 @@ get_groups(Students, ProjVars, CurrProjGroups, ProjGroups, Num, Max):-
     NextNum is Num + 1,
     get_groups(Students, ProjVars, NextProjGroups, ProjGroups, NextNum, Max).
 
-% TESTES
 solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars):-
     
     %create list of Vars with the same length of students
@@ -105,19 +104,14 @@ solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars)
     Min #= SumGPADiffs1 + SumWorkedBefore1 + SumGPADiffs2 + SumWorkedBefore2,
 
     %labeling
-    write(Proj1Vars),nl,
-    write(Proj2Vars),nl,
+
     append(Proj1Vars, Proj2Vars, AllVars),
     reset_timer,
     labeling([minimize(Min)], AllVars),
-    write(Proj1Vars),nl,
-    write(Proj2Vars),nl,
-    write(Min),nl,
+
     print_time,
     fd_statistics.
 
-
-%leftmost, min, max, first_fail, anti_first_fail, occurrence, ffc, max_regret
 
 solve_only_first(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
     
