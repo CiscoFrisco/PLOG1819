@@ -40,12 +40,12 @@ write_files(Proj1Groups, Proj2Groups, Proj1Themes, Proj2Themes):-
     open('proj1groups.txt', write, Str),
     length(Proj1Themes, Proj1ThemesLen),
     write(Str, 'PROJECT 1 GROUPS\n'),
-    write_groups(Str, Proj1Groups, 1, Proj1Themes, Proj1ThemesLen), 
+    write_groups(Str, Proj1Groups, 0, Proj1Themes, Proj1ThemesLen), 
     close(Str),
     open('proj2groups.txt', write, Str2),
     length(Proj2Themes, Proj2ThemesLen),
     write(Str2, 'PROJECT 2 GROUPS\n'),
-    write_groups(Str2, Proj2Groups, 1, Proj2Themes, Proj2ThemesLen),
+    write_groups(Str2, Proj2Groups, 0, Proj2Themes, Proj2ThemesLen),
     close(Str2).
 
 write_group(Stream, []):-write(Stream, '\n').
@@ -56,26 +56,28 @@ write_group(Stream, [H | T]):-
 
 write_groups(Stream, [], _, _, _) :- write(Stream, '\n').
 write_groups(Stream, [H | T], Count, Themes, ThemesLen):-
-    format(Stream, 'Group ~d: ', [Count]),
+    GroupNum is Count + 1,
+    format(Stream, 'Group ~d: ', [GroupNum]),
     write_group(Stream, H),
-    Index is Count mod ThemesLen,
-    nth1(Index, Themes, Theme),
+    Index is Count mod ThemesLen + 1,
+    nth0(Index, Themes, Theme),
     format(Stream, 'Theme: ~s~n~n', [Theme]),
     NextCount is Count + 1,
     write_groups(Stream, T, NextCount, Themes, ThemesLen). 
 
-write_ter_group([]):- write('\n').
+write_ter_group([]):- write('\n'), !.
 write_ter_group([H | T]):-
     write(H),
     write('  '),
     write_ter_group(T).
 
-write_ter([], _, _,_) :- write('\n').
+write_ter([], _, _,_) :- write('\n'), !.
 write_ter([H | T], Themes, ThemesLen, Count):-
-    format('Group ~d: ', [Count]),
+    GroupNum is Count + 1,
+    format('Group ~d: ', [GroupNum]),
     write_ter_group(H),
     NextCount is Count + 1,
     Index is Count mod ThemesLen,
-    nth1(Index, Themes, Theme),
+    nth0(Index, Themes, Theme),
     format('Theme: ~s~n~n', [Theme]),
     write_ter(T, Themes, ThemesLen, NextCount).
