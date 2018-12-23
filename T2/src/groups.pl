@@ -4,6 +4,18 @@
 
 :- consult('io.pl').
 
+
+reset_timer :- statistics(walltime,_).	
+print_time :-
+	statistics(walltime,[_,T]),
+	TS is ((T//10)*10)/1000,
+	nl, write('Time: '), write(TS), write('s'), nl, nl.
+
+
+if_then_else(C, I, _):- C, !, I.
+if_then_else(_, _, E):- E.
+
+
 groups_ter(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Themes, Proj2Themes):-
     solve_only_first(Students, GPAs, PreviousUCsInfo, GroupSize, Proj1Vars),
     max_member(NumGroups1, Proj1Vars),
@@ -40,8 +52,6 @@ get_groups(Students, ProjVars, CurrProjGroups, ProjGroups, Num, Max):-
     get_groups(Students, ProjVars, NextProjGroups, ProjGroups, NextNum, Max).
 
 % TESTES
-
-
 solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars):-
     
     %create list of Vars with the same length of students
@@ -85,38 +95,27 @@ solve(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Proj1Vars, Proj2Vars)
     sum(WorkedBefore1, #=, SumWorkedBefore1),
     constrain_worked_before(Students, PreviousUCsInfo, Proj2Vars, WorkedBefore2),
     sum(WorkedBefore2, #=, SumWorkedBefore2),
-    % write('solve6\n'),
-    % write(GPADiffs1),nl,
-    % write(GPADiffs2),nl,
-    % write(WorkedBefore1),nl,
-    % write(WorkedBefore2),nl,
-    write(Proj1Vars),nl,
-    write(Proj2Vars),nl,
-
 
     %different from first project
-    constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, 1, MaxNumGroups),
-    write('solve7\n'),
+    constrain_worked_first_project(Proj1Vars, Proj2Vars, MaxNumGroups, 1),
+    
+    %minimize variable
     Min #= SumGPADiffs1 + SumWorkedBefore1 + SumGPADiffs2 + SumWorkedBefore2,
-    write('solve8\n'),
 
     %labeling
-    % write(GPADiffs1),nl,
-    % write(GPADiffs2),nl,
-    % write(WorkedBefore1),nl,
-    % write(WorkedBefore2),nl,
     write(Proj1Vars),nl,
     write(Proj2Vars),nl,
-    % nl,
-    % write(SumGPADiffs1),nl,
-    % write(SumGPADiffs2),nl,
-    % write(SumWorkedBefore1),nl,
-    % write(SumWorkedBefore2),nl,
     append(Proj1Vars, Proj2Vars, AllVars),
+    reset_timer,
     labeling([minimize(Min)], AllVars),
-    write(GL),nl,
-    write(Min).
+    write(Proj1Vars),nl,
+    write(Proj2Vars),nl,
+    write(Min),nl,
+    print_time,
+    fd_statistics.
 
+
+%leftmost, min, max, first_fail, anti_first_fail, occurrence, ffc, max_regret
 
 solve_only_first(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
     
@@ -156,20 +155,9 @@ solve_only_first(Students, GPAs, PreviousUCsInfo, [MinSize, MaxSize], Vars):-
     
     %labeling   
     reset_timer,
-    labeling([minimize(Min)], Vars),
+    labeling([minimize(Min),up], Vars),
     print_time,
-    fd_statistics,
-    write(GroupElems),nl,
-    write(Max),nl,
-    write(Zeros),nl,
-    write(Min),nl.
-
-
-reset_timer :- statistics(walltime,_).	
-print_time :-
-	statistics(walltime,[_,T]),
-	TS is ((T//10)*10)/1000,
-	nl, write('Time: '), write(TS), write('s'), nl, nl.
+    fd_statistics.
 
 
 constrain_size([],_).
@@ -200,6 +188,7 @@ changeZero([Head|Tail], Max, Temp, New):-
     append(Temp,[Element],Next),
     changeZero(Tail, Max, Next, New). 
 
+
 constrain_GPA(_, _, NumGroups, Num, []):- Num > NumGroups, !.
 constrain_GPA(GPAs, Vars, NumGroups, Num, [DiffsH | DiffsT]):-
     getGPAs(GPAs, Vars, Num, GroupGPAs),
@@ -210,15 +199,16 @@ constrain_GPA(GPAs, Vars, NumGroups, Num, [DiffsH | DiffsT]):-
     NextNum is Num + 1,
     constrain_GPA(GPAs, Vars, NumGroups, NextNum, DiffsT).   
 
+
 getGroupIDs([],[],_,[]).
 getGroupIDs([CS | RS], [_ | RV], [S1,S2],RestID):-
-    CS \= S1 , 
-    CS \= S2,
+    CS \= S1, CS \= S2, !,
     getGroupIDs( RS,  RV, [S1, S2], RestID).
 getGroupIDs([CS | RS], [CV | RV], [S1,S2],[CurrID|RestID]):-
-    (CS = S1 ; CS = S2) , 
+    (CS = S1 ; CS = S2) , !,
     CurrID #= CV,
     getGroupIDs( RS,  RV, [S1, S2], RestID).
+
 
 constrain_worked_before(_, [], _, []).
 constrain_worked_before(Students, [CurrPair | RestPairs], Vars, [PairWT | RestWT]):-
@@ -227,22 +217,19 @@ constrain_worked_before(Students, [CurrPair | RestPairs], Vars, [PairWT | RestWT
     DistinctMembers #= 1 #<=> PairWT,
     constrain_worked_before(Students,  RestPairs, Vars,  RestWT).
 
-get_group([], _, _, [],0).
+
+get_group([], _, _, [],1).
 get_group([H1 | T1], [H2 | T2], Num, [Elem | Rest],GL):-
     H1 #= Num #<=> B,
     Elem #= B * H2,
     GL #= B + OldGL,
     get_group(T1, T2, Num, Rest,OldGL).
 
-constrain_worked_first_project(_, _, _, Num, NumGroups):- Num > NumGroups,!.
-constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, Num, NumGroups):-
-    get_group(Proj1Vars, Proj2Vars, Num, SameGroup2, GroupLen),
-    write(GroupLen),nl,
-    write('SameGroup:'),write(SameGroup2),nl,    
-    nvalue(DistinctElems,SameGroup2),
-    DistinctElems #= GroupLen + 1,
-    NextNum is Num + 1,
-    constrain_worked_first_project(Students, Proj1Vars, Proj2Vars, NextNum, NumGroups).
 
-if_then_else(C, I, _):- C, !, I.
-if_then_else(_, _, E):- E.
+constrain_worked_first_project(_, _, NumGroups, Num):- Num > NumGroups,!.
+constrain_worked_first_project(Proj1Vars, Proj2Vars, NumGroups, Num):-
+    get_group(Proj1Vars, Proj2Vars, Num, SameGroup,GroupLen),
+    nvalue(DistinctMembers,SameGroup),
+    DistinctMembers #= GroupLen,
+    NextNum is Num + 1,
+    constrain_worked_first_project(Proj1Vars, Proj2Vars, NumGroups, NextNum).
