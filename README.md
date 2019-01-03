@@ -1,2 +1,4 @@
 # PLOG1819
-Exercises and projects developed for FEUP MIEIC's curricular unit PLOG.
+Projects developed for FEUP MIEIC's curricular unit PLOG.
+
+Done in collaboration with [Francisco Filipe](https://github.com/CiscoFrisco).
